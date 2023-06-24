@@ -1,0 +1,16 @@
+server:
+  error:
+    whitelabel:
+      enabled: true
+  port: 8081
+
+spring:
+  kafka:
+    bootstrap-servers: "172.26.137.29:9092"
+    consumer:
+      group-id: "myGroup"
+
+myproject:
+  send-topics: my-topics
+  reply-topics: my-topics-reply
+  consumer-group: my-kafka-group
