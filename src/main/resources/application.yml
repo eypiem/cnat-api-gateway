@@ -5,13 +5,8 @@ server:
   port: 8080
 
 spring:
-  security:
-    oauth2:
-      resource-server:
-        jwt:
-          issuer-uri: http://localhost:8080/auth/
   kafka:
-    bootstrap-servers: #host:port
+    bootstrap-servers: #host:9092
     consumer:
       group-id: "myGroup"
 
@@ -25,3 +20,5 @@ app:
   kafka:
     topics:
       tracker-data-register: tracker-data-register
+  cnat:
+    user-service: http://localhost:8082

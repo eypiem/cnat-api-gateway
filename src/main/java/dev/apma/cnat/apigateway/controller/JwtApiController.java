@@ -7,20 +7,19 @@ import dev.apma.cnat.apigateway.jwt.JwtResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.io.IOException;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -29,6 +28,9 @@ import java.util.Map;
 @RequestMapping(path = "/auth")
 public class JwtApiController {
     private final static Logger LOGGER = LoggerFactory.getLogger(JwtApiController.class);
+
+    @Value("${app.cnat.user-service}")
+    private String userServiceUri;
 
     @Autowired
     private JwtHelper jwtHelper;
@@ -46,32 +48,24 @@ public class JwtApiController {
     }
 
     private boolean emailAndPasswordIsValid(String email, String password) {
-        String uri = "http://localhost:8082/authenticate";
+        String uri = userServiceUri + "/authenticate";
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<String> request =
+                new HttpEntity<>("{\"email\": \"%s\", \"password\": \"%s\"}".formatted(email, password), headers);
         RestTemplate restTemplate = new RestTemplate();
-        Map<String, Object> body = Map.of("username", email, "password", password);
-
-        HttpClient client = HttpClient.newHttpClient();
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(uri))
-                .setHeader("Content-Type", "application/json")
-                .POST(HttpRequest.BodyPublishers.ofString("{\"email\": \"%s\", \"password\": \"%s\"}".formatted(email,
-                        password)))
-                .build();
-
-        HttpResponse<String> response = null;
         try {
-            response = client.send(request, HttpResponse.BodyHandlers.ofString());
-        } catch (IOException | InterruptedException e) {
+            String response = restTemplate.postForObject(uri, request, String.class);
+            if ("true".equals(response)) {
+                LOGGER.info("user authenticated");
+                return true;
+            } else if ("false".equals(response)) {
+                LOGGER.info("user not authenticated");
+                return false;
+            }
+            throw new RuntimeException("Bad response from cnat-user-service.");
+        } catch (RestClientException e) {
             throw new RuntimeException("Error in communicating with cnat-user-service.", e);
         }
-
-        if ("true".equals(response.body())) {
-            LOGGER.info("email found");
-            return true;
-        } else if ("false".equals(response.body())) {
-            LOGGER.info("email not found");
-            return false;
-        }
-        throw new RuntimeException("Bad response from cnat-user-service.");
     }
 }
