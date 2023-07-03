@@ -1,4 +1,4 @@
-package dev.apma.cnat.apigateway.dto;
+package dev.apma.cnat.apigateway.request;
 
 
 import java.time.Instant;

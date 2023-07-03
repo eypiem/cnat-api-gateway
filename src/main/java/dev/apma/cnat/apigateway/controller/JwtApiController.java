@@ -1,6 +1,7 @@
 package dev.apma.cnat.apigateway.controller;
 
 
+import dev.apma.cnat.apigateway.jwt.JwtClaims;
 import dev.apma.cnat.apigateway.jwt.JwtHelper;
 import dev.apma.cnat.apigateway.jwt.JwtRequest;
 import dev.apma.cnat.apigateway.jwt.JwtResponse;
@@ -40,7 +41,7 @@ public class JwtApiController {
 
         if (emailAndPasswordIsValid(body.email(), body.password())) {
             Map<String, String> claims = new HashMap<>();
-            claims.put("email", body.email());
+            claims.put(JwtClaims.USER_EMAIL, body.email());
             return new JwtResponse(body.email(), jwtHelper.createJwtForClaims(body.email(), claims));
         } else {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not authenticated");

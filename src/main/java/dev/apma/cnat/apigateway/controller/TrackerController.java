@@ -1,6 +1,8 @@
 package dev.apma.cnat.apigateway.controller;
 
 
+import dev.apma.cnat.apigateway.dto.Tracker;
+import jakarta.validation.constraints.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -9,16 +11,15 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping(path = "/tracker")
+@RequestMapping("/tracker")
 public class TrackerController {
     private final static Logger LOGGER = LoggerFactory.getLogger(TrackerController.class);
 
@@ -43,5 +44,11 @@ public class TrackerController {
         } catch (RestClientException e) {
             throw new RuntimeException("Error in communicating with cnat-tracker-service.", e);
         }
+    }
+
+    @GetMapping("/get")
+    public List<Tracker> getUserTrackers(@RequestParam @NotNull String userId) {
+        LOGGER.info("/trackers/get: %s".formatted(userId));
+        return null;
     }
 }
