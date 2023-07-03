@@ -9,6 +9,9 @@ spring:
     bootstrap-servers: #host:9092
     consumer:
       group-id: "myGroup"
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
 
 app:
   security:
@@ -22,3 +25,4 @@ app:
       tracker-data-register: tracker-data-register
   cnat:
     user-service: http://localhost:8082
+    tracker-service: http://localhost:8081
