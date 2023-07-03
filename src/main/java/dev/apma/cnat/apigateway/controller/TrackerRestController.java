@@ -20,8 +20,8 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/tracker")
-public class TrackerController {
-    private final static Logger LOGGER = LoggerFactory.getLogger(TrackerController.class);
+public class TrackerRestController {
+    private final static Logger LOGGER = LoggerFactory.getLogger(TrackerRestController.class);
 
     @Value("${app.cnat.tracker-service}")
     private String trackerServiceUri;

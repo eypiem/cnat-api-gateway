@@ -3,7 +3,7 @@ package dev.apma.cnat.apigateway.controller;
 
 import dev.apma.cnat.apigateway.dto.TrackerData;
 import dev.apma.cnat.apigateway.jwt.JwtClaims;
-import dev.apma.cnat.apigateway.request.GetTrackerDataRequest;
+import dev.apma.cnat.apigateway.request.TrackerDataGetRequest;
 import dev.apma.cnat.apigateway.request.TrackerDataRegisterRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,8 +27,8 @@ import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping(path = "/tracker-data")
-public class TrackerDataController {
-    private final static Logger LOGGER = LoggerFactory.getLogger(TrackerDataController.class);
+public class TrackerDataRestController {
+    private final static Logger LOGGER = LoggerFactory.getLogger(TrackerDataRestController.class);
 
     @Value("${app.cnat.tracker-service}")
     private String trackerServiceUri;
@@ -46,7 +46,7 @@ public class TrackerDataController {
     }
 
     @PostMapping("/get")
-    public TrackerData[] getTrackerData(Authentication auth, @RequestBody GetTrackerDataRequest body) {
+    public TrackerData[] getTrackerData(Authentication auth, @RequestBody TrackerDataGetRequest body) {
         LOGGER.info("/tracker-data/get: {}", body);
         JwtAuthenticationToken token = (JwtAuthenticationToken) auth;
         if (!body.tracker().userId().equals(token.getTokenAttributes().get(JwtClaims.USER_EMAIL))) {
@@ -55,7 +55,7 @@ public class TrackerDataController {
         String uri = trackerServiceUri + "/tracker-data/get";
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-        HttpEntity<GetTrackerDataRequest> request = new HttpEntity<>(body, headers);
+        HttpEntity<TrackerDataGetRequest> request = new HttpEntity<>(body, headers);
         RestTemplate restTemplate = new RestTemplate();
         try {
             return restTemplate.postForObject(uri, request, TrackerData[].class);

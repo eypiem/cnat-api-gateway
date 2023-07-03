@@ -13,9 +13,9 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.Map;
 
 @RestController
-@RequestMapping(path = "/user")
-public class UserApiController {
-    private final static Logger LOGGER = LoggerFactory.getLogger(UserApiController.class);
+@RequestMapping("/user")
+public class UserRestController {
+    private final static Logger LOGGER = LoggerFactory.getLogger(UserRestController.class);
 
     @GetMapping("/hi")
     public String getUser(Authentication auth) {

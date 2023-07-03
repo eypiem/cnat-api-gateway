@@ -17,7 +17,6 @@ import java.security.cert.CertificateException;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 
-
 @Configuration
 public class JwtConfig {
     private final static Logger LOGGER = LoggerFactory.getLogger(JwtConfig.class);
