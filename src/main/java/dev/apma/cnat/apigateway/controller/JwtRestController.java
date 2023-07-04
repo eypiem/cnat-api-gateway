@@ -1,7 +1,6 @@
 package dev.apma.cnat.apigateway.controller;
 
 
-import dev.apma.cnat.apigateway.jwt.JwtClaims;
 import dev.apma.cnat.apigateway.jwt.JwtHelper;
 import dev.apma.cnat.apigateway.request.UserAuthRequest;
 import dev.apma.cnat.apigateway.response.UserAuthResponse;
@@ -21,7 +20,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-
 @RestController
 @RequestMapping("/auth")
 public class JwtRestController {
@@ -40,7 +38,7 @@ public class JwtRestController {
             if (authResult.get()) {
                 LOGGER.info("User authentication succeeded");
                 Map<String, String> claims = new HashMap<>();
-                claims.put(JwtClaims.USER_EMAIL, body.email());
+                claims.put(JwtHelper.ROLE_ATTRIBUTE, JwtHelper.Role.USER.toString());
                 return new ResponseEntity<>(new UserAuthResponse(body.email(),
                         jwtHelper.createJwtForClaims(body.email(), claims)), HttpStatus.OK);
             } else {
