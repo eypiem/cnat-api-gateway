@@ -28,6 +28,7 @@ public class AppSecurity {
                 .authorizeHttpRequests(auth -> auth.requestMatchers("/api-docs/**",
                         "/api-docs.yaml",
                         "/swagger-ui/**",
+                        "/error",
                         "/auth/login",
                         "/user/register").permitAll().anyRequest().authenticated())
                 .oauth2ResourceServer(OAuth2ResourceServerConfigurer::jwt)

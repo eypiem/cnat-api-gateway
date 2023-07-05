@@ -1,26 +1,58 @@
 package dev.apma.cnat.apigateway.controller;
 
 
+import dev.apma.cnat.apigateway.request.UserRegisterRequest;
+import dev.apma.cnat.apigateway.response.GenericResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.HttpStatusCodeException;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping("/user")
 public class UserRestController {
     private final static Logger LOGGER = LoggerFactory.getLogger(UserRestController.class);
 
+    @Value("${app.cnat.user-service}")
+    private String userServiceUri;
+
     @PostMapping("/register")
-    public void register() {
-        LOGGER.info("/register");
-        //kafkaTemplate.send(KafkaTopics.TRACKER_STATUS_UPDATE_REQ, "New register request from api.");
+    public GenericResponse register(@RequestBody UserRegisterRequest user) {
+        LOGGER.info("/user/register: {}", user);
+
+        String uri = userServiceUri + "/register";
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<UserRegisterRequest> request = new HttpEntity<>(user, headers);
+        RestTemplate restTemplate = new RestTemplate();
+
+        try {
+            return restTemplate.postForObject(uri, request, GenericResponse.class);
+        } catch (HttpStatusCodeException e) {
+            GenericResponse gr = e.getResponseBodyAs(GenericResponse.class);
+            throw new ResponseStatusException(e.getStatusCode(), gr != null ? gr.message() : null);
+
+        } catch (RestClientException e) {
+            LOGGER.error("Error in communicating with cnat-tracker-service: {}", e.getMessage());
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                    "Error in communicating with cnat-tracker-service");
+        }
     }
 
     @PostMapping("/delete")
     public void update() {
         LOGGER.info("/delete");
-        //kafkaTemplate.send(KafkaTopics.TRACKER_STATUS_UPDATE_REQ, "New data update request from api.");
+        /// TODO: Implement
     }
 }
