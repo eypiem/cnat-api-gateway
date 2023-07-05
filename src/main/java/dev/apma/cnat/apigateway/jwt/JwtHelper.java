@@ -5,8 +5,11 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTCreator;
 import com.auth0.jwt.algorithms.Algorithm;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Component;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
@@ -14,7 +17,7 @@ import java.time.Instant;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Map;
-import java.util.function.Supplier;
+import java.util.function.Function;
 
 @Component
 public class JwtHelper {
@@ -65,18 +68,14 @@ public class JwtHelper {
         return jwtBuilder.withNotBefore(new Date()).sign(Algorithm.RSA256(publicKey, privateKey));
     }
 
-    public static <T> T onRoleMatch(JwtAuthenticationToken token, Role role, Supplier<T> onMatch, Supplier<T> orElse) {
+    public static <T> T onRoleMatchOrElseThrow(Authentication auth, Role role, Function<String, T> onMatch) {
+        JwtAuthenticationToken token = (JwtAuthenticationToken) auth;
         Map<String, Object> attributes = token.getTokenAttributes();
         String actualRole = attributes.get(JwtHelper.ROLE_ATTRIBUTE).toString();
         if (role.toString().equals(actualRole)) {
-            return onMatch.get();
-        } else {
-            return orElse.get();
+            String subject = attributes.get(JwtHelper.SUBJECT_ATTRIBUTE).toString();
+            return onMatch.apply(subject);
         }
-    }
-
-    public static String getSubject(JwtAuthenticationToken token) {
-        Map<String, Object> attributes = token.getTokenAttributes();
-        return attributes.get(JwtHelper.SUBJECT_ATTRIBUTE).toString();
+        throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Role does not match request");
     }
 }

@@ -5,20 +5,24 @@ import dev.apma.cnat.apigateway.dto.TrackerData;
 import dev.apma.cnat.apigateway.jwt.JwtHelper;
 import dev.apma.cnat.apigateway.request.TrackerDataGetRequest;
 import dev.apma.cnat.apigateway.request.TrackerDataRegisterRequest;
+import dev.apma.cnat.apigateway.response.GenericResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.*;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping(path = "/tracker-data")
@@ -35,33 +39,25 @@ public class TrackerDataRestController {
     private String trackerDataRegisterTopic;
 
     @PostMapping("/register")
-    public ResponseEntity<String> register(Authentication auth, @RequestBody TrackerDataRegisterRequest body) {
+    public GenericResponse register(Authentication auth, @RequestBody TrackerDataRegisterRequest body) {
         LOGGER.info("/tracker-data/register: {}", body);
-        JwtAuthenticationToken token = (JwtAuthenticationToken) auth;
 
-        return JwtHelper.onRoleMatch(token, JwtHelper.Role.TRACKER, () -> {
-            if (!body.trackerId().equals(JwtHelper.getSubject(token))) {
-                LOGGER.warn("JWT Token does not correspond to tracker");
-                return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
+        return JwtHelper.onRoleMatchOrElseThrow(auth, JwtHelper.Role.TRACKER, (subject) -> {
+            if (!body.trackerId().equals(subject)) {
+                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "JWT Token does not correspond to tracker");
             }
-
             kafkaTemplate.send(trackerDataRegisterTopic, body);
-            return new ResponseEntity<>("{\"status\": \"Ok\"}", HttpStatus.OK);
-        }, () -> {
-            LOGGER.warn("Request from non-matching role");
-            return new ResponseEntity<>("{\"error\": \"Role does not match\"}", HttpStatus.UNAUTHORIZED);
+            return new GenericResponse("OK");
         });
     }
 
     @PostMapping("/get")
-    public ResponseEntity<TrackerData[]> getTrackerData(Authentication auth, @RequestBody TrackerDataGetRequest body) {
+    public TrackerData[] getTrackerData(Authentication auth, @RequestBody TrackerDataGetRequest body) {
         LOGGER.info("/tracker-data/get: {}", body);
-        JwtAuthenticationToken token = (JwtAuthenticationToken) auth;
 
-        return JwtHelper.onRoleMatch(token, JwtHelper.Role.USER, () -> {
-            if (!body.tracker().userId().equals(JwtHelper.getSubject(token))) {
-                LOGGER.warn("User does not correspond to tracker");
-                return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
+        return JwtHelper.onRoleMatchOrElseThrow(auth, JwtHelper.Role.USER, (subject) -> {
+            if (!body.tracker().userId().equals(subject)) {
+                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User does not correspond to tracker");
             }
 
             String uri = trackerServiceUri + "/tracker-data/get";
@@ -69,15 +65,11 @@ public class TrackerDataRestController {
             headers.setContentType(MediaType.APPLICATION_JSON);
             HttpEntity<TrackerDataGetRequest> request = new HttpEntity<>(body, headers);
             try {
-                return new ResponseEntity<>(new RestTemplate().postForObject(uri, request, TrackerData[].class),
-                        HttpStatus.OK);
+                return new RestTemplate().postForObject(uri, request, TrackerData[].class);
             } catch (RestClientException e) {
-                LOGGER.error("Error in communicating with cnat-tracker-service: {}", e.getMessage());
-                return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+                throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE,
+                        "Error in communicating with cnat-tracker-service");
             }
-        }, () -> {
-            LOGGER.warn("Request from non-matching role");
-            return new ResponseEntity<>(null, HttpStatus.UNAUTHORIZED);
         });
     }
 }

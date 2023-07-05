@@ -1,6 +1,7 @@
 package dev.apma.cnat.apigateway.controller;
 
 
+import dev.apma.cnat.apigateway.jwt.JwtHelper;
 import dev.apma.cnat.apigateway.request.UserRegisterRequest;
 import dev.apma.cnat.apigateway.response.GenericResponse;
 import org.slf4j.Logger;
@@ -10,10 +11,8 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
@@ -35,24 +34,26 @@ public class UserRestController {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<UserRegisterRequest> request = new HttpEntity<>(user, headers);
-        RestTemplate restTemplate = new RestTemplate();
 
         try {
-            return restTemplate.postForObject(uri, request, GenericResponse.class);
+            return new RestTemplate().postForObject(uri, request, GenericResponse.class);
         } catch (HttpStatusCodeException e) {
             GenericResponse gr = e.getResponseBodyAs(GenericResponse.class);
             throw new ResponseStatusException(e.getStatusCode(), gr != null ? gr.message() : null);
-
         } catch (RestClientException e) {
             LOGGER.error("Error in communicating with cnat-tracker-service: {}", e.getMessage());
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+            throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE,
                     "Error in communicating with cnat-tracker-service");
         }
     }
 
-    @PostMapping("/delete")
-    public void update() {
+    @DeleteMapping("/delete")
+    public GenericResponse delete(Authentication auth) {
         LOGGER.info("/delete");
-        /// TODO: Implement
+
+        return JwtHelper.onRoleMatchOrElseThrow(auth, JwtHelper.Role.USER, (subject) -> {
+            /// TODO: Implement
+            throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED);
+        });
     }
 }
