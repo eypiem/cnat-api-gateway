@@ -67,6 +67,7 @@ public class TrackerDataRestController {
             try {
                 return new RestTemplate().postForObject(uri, request, TrackerData[].class);
             } catch (RestClientException e) {
+                LOGGER.error("Error in communicating with cnat-tracker-service: {}", e.getMessage());
                 throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE,
                         "Error in communicating with cnat-tracker-service");
             }

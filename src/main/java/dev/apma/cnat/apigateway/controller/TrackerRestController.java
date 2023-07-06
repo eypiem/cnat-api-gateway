@@ -62,6 +62,7 @@ public class TrackerRestController {
                 GenericResponse gr = e.getResponseBodyAs(GenericResponse.class);
                 throw new ResponseStatusException(e.getStatusCode(), gr != null ? gr.message() : null);
             } catch (RestClientException e) {
+                LOGGER.error("Error in communicating with cnat-tracker-service: {}", e.getMessage());
                 throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE,
                         "Error in communicating with cnat-tracker-service");
             }
@@ -77,7 +78,8 @@ public class TrackerRestController {
             try {
                 return new RestTemplate().getForObject(uri, Tracker[].class);
             } catch (RestClientException e) {
-                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                LOGGER.error("Error in communicating with cnat-tracker-service: {}", e.getMessage());
+                throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE,
                         "Error in communicating with cnat-tracker-service");
             }
         });
