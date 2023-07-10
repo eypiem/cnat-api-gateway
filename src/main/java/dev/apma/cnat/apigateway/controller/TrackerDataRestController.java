@@ -38,10 +38,9 @@ public class TrackerDataRestController {
         LOGGER.info("/tracker-data/register: {}", body);
 
         return JwtHelper.onRoleMatchOrElseThrow(auth, JwtHelper.Role.TRACKER, (subject) -> {
-            if (!body.trackerId().equals(subject)) {
-                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "JWT Token does not correspond to tracker");
-            }
-            kafkaTemplate.send(trackerDataRegisterTopic, body);
+            var req = new TrackerDataRegisterRequest(subject, body.data(), body.timestamp());
+            kafkaTemplate.send(trackerDataRegisterTopic, req);
+            /// TODO: check if Kafka was successful
             return new GenericResponse("OK");
         });
     }
@@ -55,11 +54,13 @@ public class TrackerDataRestController {
         LOGGER.info("/tracker-data/get/{} from: {} to: {}", trackerId, from, to);
 
         return JwtHelper.onRoleMatchOrElseThrow(auth, JwtHelper.Role.USER, (subject) -> {
-            if (!subject.equals(trackerService.getTrackerById(trackerId).userId())) {
-                LOGGER.warn("Non matching user and tracker request detected.");
-                return new TrackerData[]{};
-            }
-            return trackerService.getTrackerData(trackerId, from, to);
+            return trackerService.onTrackerMatchUserOrElseThrow(trackerId, subject, () -> {
+                var res = trackerService.getTrackerData(trackerId, from, to);
+                if (res.isPresent()) {
+                    return res.get();
+                }
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+            });
         });
     }
 }

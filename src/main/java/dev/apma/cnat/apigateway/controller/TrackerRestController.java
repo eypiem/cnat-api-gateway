@@ -40,11 +40,9 @@ public class TrackerRestController {
         LOGGER.info("/tracker/delete/{}", trackerId);
 
         JwtHelper.onRoleMatchOrElseThrow(auth, JwtHelper.Role.USER, (subject) -> {
-            if (!subject.equals(trackerService.getTrackerById(trackerId).userId())) {
-                LOGGER.warn("Non matching user and tracker request detected.");
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
-            }
-            trackerService.deleteTrackerById(trackerId);
+            trackerService.onTrackerMatchUserOrElseThrow(trackerId, subject, () -> {
+                trackerService.deleteTrackerById(trackerId);
+            });
         });
     }
 
@@ -54,7 +52,11 @@ public class TrackerRestController {
         LOGGER.info("/tracker/get");
 
         return JwtHelper.onRoleMatchOrElseThrow(auth, JwtHelper.Role.USER, (subject) -> {
-            return trackerService.getUserTrackers(subject);
+            var res = trackerService.getUserTrackers(subject);
+            if (res.isPresent()) {
+                return res.get();
+            }
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         });
     }
 }
