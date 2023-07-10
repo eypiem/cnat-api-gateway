@@ -1,7 +1,6 @@
 package dev.apma.cnat.apigateway.controller;
 
 
-import dev.apma.cnat.apigateway.jwt.JwtHelper;
 import dev.apma.cnat.apigateway.request.UserRegisterRequest;
 import dev.apma.cnat.apigateway.response.GenericResponse;
 import org.slf4j.Logger;
@@ -26,6 +25,7 @@ public class UserRestController {
     @Value("${app.cnat.user-service}")
     private String userServiceUri;
 
+    @CrossOrigin(origins = "${app.cnat.web-app}")
     @PostMapping("/register")
     public GenericResponse register(@RequestBody UserRegisterRequest user) {
         LOGGER.info("/user/register: {}", user);
@@ -47,13 +47,15 @@ public class UserRestController {
         }
     }
 
+    @CrossOrigin(origins = "${app.cnat.web-app}")
     @DeleteMapping("/delete")
     public GenericResponse delete(Authentication auth) {
         LOGGER.info("/delete");
 
-        return JwtHelper.onRoleMatchOrElseThrow(auth, JwtHelper.Role.USER, (subject) -> {
-            /// TODO: Implement
-            throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED);
-        });
+        //        return JwtHelper.onRoleMatchOrElseThrow(auth, JwtHelper.Role.USER, (subject) -> {
+        //            /// TODO: Implement
+        //            throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED);
+        //        });
+        return null;
     }
 }

@@ -1,36 +1,31 @@
 package dev.apma.cnat.apigateway.controller;
 
 
+import dev.apma.cnat.apigateway.TrackerService;
 import dev.apma.cnat.apigateway.dto.TrackerData;
 import dev.apma.cnat.apigateway.jwt.JwtHelper;
-import dev.apma.cnat.apigateway.request.TrackerDataGetRequest;
 import dev.apma.cnat.apigateway.request.TrackerDataRegisterRequest;
 import dev.apma.cnat.apigateway.response.GenericResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.client.RestClientException;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
+
+import java.time.Instant;
+import java.util.Optional;
 
 @RestController
 @RequestMapping(path = "/tracker-data")
 public class TrackerDataRestController {
     private final static Logger LOGGER = LoggerFactory.getLogger(TrackerDataRestController.class);
 
-    @Value("${app.cnat.tracker-service}")
-    private String trackerServiceUri;
+    @Autowired
+    private TrackerService trackerService;
 
     @Autowired
     private KafkaTemplate<String, TrackerDataRegisterRequest> kafkaTemplate;
@@ -51,26 +46,20 @@ public class TrackerDataRestController {
         });
     }
 
-    @PostMapping("/get")
-    public TrackerData[] getTrackerData(Authentication auth, @RequestBody TrackerDataGetRequest body) {
-        LOGGER.info("/tracker-data/get: {}", body);
+    @CrossOrigin(origins = "${app.cnat.web-app}")
+    @GetMapping("/get/{trackerId}")
+    public TrackerData[] getTrackerData(Authentication auth,
+                                        @PathVariable String trackerId,
+                                        @RequestParam Optional<Instant> from,
+                                        @RequestParam Optional<Instant> to) {
+        LOGGER.info("/tracker-data/get/{} from: {} to: {}", trackerId, from, to);
 
         return JwtHelper.onRoleMatchOrElseThrow(auth, JwtHelper.Role.USER, (subject) -> {
-            if (!body.tracker().userId().equals(subject)) {
-                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User does not correspond to tracker");
+            if (!subject.equals(trackerService.getTrackerById(trackerId).userId())) {
+                LOGGER.warn("Non matching user and tracker request detected.");
+                return new TrackerData[]{};
             }
-
-            String uri = trackerServiceUri + "/tracker-data/get";
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-            HttpEntity<TrackerDataGetRequest> request = new HttpEntity<>(body, headers);
-            try {
-                return new RestTemplate().postForObject(uri, request, TrackerData[].class);
-            } catch (RestClientException e) {
-                LOGGER.error("Error in communicating with cnat-tracker-service: {}", e.getMessage());
-                throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE,
-                        "Error in communicating with cnat-tracker-service");
-            }
+            return trackerService.getTrackerData(trackerId, from, to);
         });
     }
 }

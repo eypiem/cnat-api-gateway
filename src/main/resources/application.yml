@@ -27,8 +27,12 @@ app:
     topics:
       tracker-data-register: tracker-data-register
   cnat:
+    # user-service: http://cnat-user-service-nodeport:8082
+    # tracker-service: http://cnat-tracker-service-nodeport:8081
+    # web-app: http://cnat-web-app-nodeport:3000
     user-service: http://localhost:8082
     tracker-service: http://localhost:8081
+    web-app: http://localhost:3000
 
 springdoc:
   api-docs:

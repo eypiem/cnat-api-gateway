@@ -17,6 +17,7 @@ import java.time.Instant;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 @Component
@@ -77,5 +78,12 @@ public class JwtHelper {
             return onMatch.apply(subject);
         }
         throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Role does not match request");
+    }
+
+    public static void onRoleMatchOrElseThrow(Authentication auth, Role role, Consumer<String> onMatch) {
+        onRoleMatchOrElseThrow(auth, role, (subject) -> {
+            onMatch.accept(subject);
+            return null;
+        });
     }
 }
