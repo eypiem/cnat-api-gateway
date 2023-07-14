@@ -15,6 +15,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
@@ -38,10 +39,7 @@ public class TrackerService {
 
     public <T> T onTrackerMatchUserOrElseThrow(String trackerId, String userId, Supplier<T> onMatch) {
         var tracker = getTrackerById(trackerId);
-        if (tracker.isEmpty()) {
-            LOGGER.warn("Access to non-existent tracker requested.");
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
-        } else if (!userId.equals(tracker.get().userId())) {
+        if (!userId.equals(tracker.userId())) {
             LOGGER.warn("Non-matching user and tracker request detected.");
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }
@@ -55,10 +53,13 @@ public class TrackerService {
         });
     }
 
-    public Optional<Tracker> getTrackerById(String trackerId) {
+    public Tracker getTrackerById(String trackerId) {
         var uri = trackerServiceUri + "/tracker/get/%s".formatted(trackerId);
         try {
-            return Optional.ofNullable(new RestTemplate().getForObject(uri, Tracker.class));
+            return new RestTemplate().getForObject(uri, Tracker.class);
+        } catch (HttpClientErrorException.NotFound e) {
+            LOGGER.warn("Access to non-existent tracker requested.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         } catch (RestClientException e) {
             LOGGER.error("Error in communicating with cnat-tracker-service: {}", e.getMessage());
             throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE,
@@ -66,7 +67,7 @@ public class TrackerService {
         }
     }
 
-    public Optional<TrackerData[]> getTrackerData(String trackerId, Optional<Instant> from, Optional<Instant> to) {
+    public TrackerData[] getTrackerData(String trackerId, Optional<Instant> from, Optional<Instant> to) {
         try {
             var uri = trackerServiceUri + "/tracker-data/get/%s?".formatted(trackerId);
 
@@ -74,10 +75,10 @@ public class TrackerService {
                 uri += "from=%s&".formatted(from.get());
             }
             if (to.isPresent()) {
-                uri += "from=%s&".formatted(to.get());
+                uri += "to=%s&".formatted(to.get());
             }
 
-            return Optional.ofNullable(new RestTemplate().getForObject(uri, TrackerData[].class));
+            return new RestTemplate().getForObject(uri, TrackerData[].class);
         } catch (RestClientException e) {
             LOGGER.error("Error in communicating with cnat-tracker-service: {}", e.getMessage());
             throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE,
@@ -121,10 +122,10 @@ public class TrackerService {
         }
     }
 
-    public Optional<Tracker[]> getUserTrackers(String userId) {
+    public Tracker[] getUserTrackers(String userId) {
         String uri = trackerServiceUri + "/tracker/get?userId=%s".formatted(userId);
         try {
-            return Optional.ofNullable(new RestTemplate().getForObject(uri, Tracker[].class));
+            return new RestTemplate().getForObject(uri, Tracker[].class);
         } catch (RestClientException e) {
             LOGGER.error("Error in communicating with cnat-tracker-service: {}", e.getMessage());
             throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE,

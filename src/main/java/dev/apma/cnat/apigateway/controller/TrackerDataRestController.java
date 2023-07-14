@@ -10,11 +10,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Instant;
 import java.util.Optional;
@@ -55,11 +53,7 @@ public class TrackerDataRestController {
 
         return JwtHelper.onRoleMatchOrElseThrow(auth, JwtHelper.Role.USER, (subject) -> {
             return trackerService.onTrackerMatchUserOrElseThrow(trackerId, subject, () -> {
-                var res = trackerService.getTrackerData(trackerId, from, to);
-                if (res.isPresent()) {
-                    return res.get();
-                }
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+                return trackerService.getTrackerData(trackerId, from, to);
             });
         });
     }

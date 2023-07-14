@@ -52,11 +52,17 @@ public class TrackerRestController {
         LOGGER.info("/tracker/get");
 
         return JwtHelper.onRoleMatchOrElseThrow(auth, JwtHelper.Role.USER, (subject) -> {
-            var res = trackerService.getUserTrackers(subject);
-            if (res.isPresent()) {
-                return res.get();
-            }
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+            return trackerService.getUserTrackers(subject);
+        });
+    }
+
+    @CrossOrigin(origins = "${app.cnat.web-app}")
+    @GetMapping("/get/{trackerId}")
+    public Tracker getTracker(Authentication auth, @PathVariable String trackerId) {
+        LOGGER.info("/tracker/get/{}", trackerId);
+
+        return JwtHelper.onRoleMatchOrElseThrow(auth, JwtHelper.Role.USER, (subject) -> {
+            return trackerService.getTrackerById(trackerId);
         });
     }
 }
