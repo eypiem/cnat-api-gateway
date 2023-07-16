@@ -19,10 +19,10 @@ spring:
 app:
   security:
     jwt:
-      keystore-location: keys/cnat-jwt-signing.jks
-      password: #password
-      key-alias: jwtsigning
-      passphrase: #passphrase
+      keystore-location: keys/keystore.jks
+      password: ${CNAT_API_GATEWAY_KEYSTORE_PASSWORD}
+      key-alias: ${CNAT_API_GATEWAY_JWT_KEY_ALIAS}
+      passphrase: ${CNAT_API_GATEWAY_JWT_KEY_PASSWORD}
   kafka:
     topics:
       tracker-data-register: tracker-data-register
