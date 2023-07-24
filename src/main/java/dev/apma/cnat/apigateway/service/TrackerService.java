@@ -1,4 +1,4 @@
-package dev.apma.cnat.apigateway;
+package dev.apma.cnat.apigateway.service;
 
 
 import dev.apma.cnat.apigateway.dto.Tracker;
@@ -78,6 +78,17 @@ public class TrackerService {
                 uri += "to=%s&".formatted(to.get());
             }
 
+            return new RestTemplate().getForObject(uri, TrackerData[].class);
+        } catch (RestClientException e) {
+            LOGGER.error("Error in communicating with cnat-tracker-service: {}", e.getMessage());
+            throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE,
+                    "Error in communicating with cnat-tracker-service");
+        }
+    }
+
+    public TrackerData[] getLatestTrackersData(String userId) {
+        try {
+            var uri = trackerServiceUri + "/tracker-data/get-latest?userId=%s".formatted(userId);
             return new RestTemplate().getForObject(uri, TrackerData[].class);
         } catch (RestClientException e) {
             LOGGER.error("Error in communicating with cnat-tracker-service: {}", e.getMessage());

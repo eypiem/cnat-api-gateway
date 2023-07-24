@@ -1,11 +1,11 @@
 package dev.apma.cnat.apigateway.controller;
 
 
-import dev.apma.cnat.apigateway.TrackerService;
 import dev.apma.cnat.apigateway.dto.TrackerData;
 import dev.apma.cnat.apigateway.jwt.JwtHelper;
 import dev.apma.cnat.apigateway.request.TrackerDataRegisterRequest;
 import dev.apma.cnat.apigateway.response.GenericResponse;
+import dev.apma.cnat.apigateway.service.TrackerService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,7 +23,7 @@ public class TrackerDataRestController {
     private final static Logger LOGGER = LoggerFactory.getLogger(TrackerDataRestController.class);
 
     @Autowired
-    private TrackerService trackerService;
+    private TrackerService trackerSvc;
 
     @Autowired
     private KafkaTemplate<String, TrackerDataRegisterRequest> kafkaTemplate;
@@ -52,9 +52,19 @@ public class TrackerDataRestController {
         LOGGER.info("/tracker-data/get/{} from: {} to: {}", trackerId, from, to);
 
         return JwtHelper.onRoleMatchOrElseThrow(auth, JwtHelper.Role.USER, (subject) -> {
-            return trackerService.onTrackerMatchUserOrElseThrow(trackerId, subject, () -> {
-                return trackerService.getTrackerData(trackerId, from, to);
+            return trackerSvc.onTrackerMatchUserOrElseThrow(trackerId, subject, () -> {
+                return trackerSvc.getTrackerData(trackerId, from, to);
             });
+        });
+    }
+
+    @CrossOrigin(origins = "${app.cnat.web-app}")
+    @GetMapping("/get-latest")
+    public TrackerData[] getLatestTrackersData(Authentication auth) {
+        LOGGER.info("/tracker-data/get-latest");
+
+        return JwtHelper.onRoleMatchOrElseThrow(auth, JwtHelper.Role.USER, (subject) -> {
+            return trackerSvc.getLatestTrackersData(subject);
         });
     }
 }

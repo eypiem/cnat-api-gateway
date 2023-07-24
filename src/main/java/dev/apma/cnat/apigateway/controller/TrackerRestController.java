@@ -1,10 +1,10 @@
 package dev.apma.cnat.apigateway.controller;
 
 
-import dev.apma.cnat.apigateway.TrackerService;
 import dev.apma.cnat.apigateway.dto.Tracker;
 import dev.apma.cnat.apigateway.jwt.JwtHelper;
 import dev.apma.cnat.apigateway.response.TrackerRegisterResponse;
+import dev.apma.cnat.apigateway.service.TrackerService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +19,7 @@ public class TrackerRestController {
     private final static Logger LOGGER = LoggerFactory.getLogger(TrackerRestController.class);
 
     @Autowired
-    private TrackerService trackerService;
+    private TrackerService trackerSvc;
 
     @CrossOrigin(origins = "${app.cnat.web-app}")
     @PostMapping("/register")
@@ -30,7 +30,7 @@ public class TrackerRestController {
         }
 
         return JwtHelper.onRoleMatchOrElseThrow(auth, JwtHelper.Role.USER, (subject) -> {
-            return trackerService.registerTracker(new Tracker(null, subject, body.name()));
+            return trackerSvc.registerTracker(new Tracker(null, subject, body.name()));
         });
     }
 
@@ -40,8 +40,8 @@ public class TrackerRestController {
         LOGGER.info("/tracker/delete/{}", trackerId);
 
         JwtHelper.onRoleMatchOrElseThrow(auth, JwtHelper.Role.USER, (subject) -> {
-            trackerService.onTrackerMatchUserOrElseThrow(trackerId, subject, () -> {
-                trackerService.deleteTrackerById(trackerId);
+            trackerSvc.onTrackerMatchUserOrElseThrow(trackerId, subject, () -> {
+                trackerSvc.deleteTrackerById(trackerId);
             });
         });
     }
@@ -52,7 +52,7 @@ public class TrackerRestController {
         LOGGER.info("/tracker/get");
 
         return JwtHelper.onRoleMatchOrElseThrow(auth, JwtHelper.Role.USER, (subject) -> {
-            return trackerService.getUserTrackers(subject);
+            return trackerSvc.getUserTrackers(subject);
         });
     }
 
@@ -62,7 +62,7 @@ public class TrackerRestController {
         LOGGER.info("/tracker/get/{}", trackerId);
 
         return JwtHelper.onRoleMatchOrElseThrow(auth, JwtHelper.Role.USER, (subject) -> {
-            return trackerService.getTrackerById(trackerId);
+            return trackerSvc.getTrackerById(trackerId);
         });
     }
 }
