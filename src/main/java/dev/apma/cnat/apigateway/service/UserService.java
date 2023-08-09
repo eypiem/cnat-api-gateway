@@ -24,7 +24,7 @@ public class UserService {
     private String userServiceUri;
 
     public Boolean emailAndPasswordIsValid(UserAuthRequest req) {
-        String uri = userServiceUri + "/authenticate";
+        String uri = userServiceUri + "/auth";
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<UserAuthRequest> request = new HttpEntity<>(req, headers);

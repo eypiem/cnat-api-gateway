@@ -54,7 +54,7 @@ public class TrackerService {
     }
 
     public Tracker getTrackerById(String trackerId) {
-        var uri = trackerServiceUri + "/tracker/get/%s".formatted(trackerId);
+        var uri = trackerServiceUri + "/%s".formatted(trackerId);
         try {
             return new RestTemplate().getForObject(uri, Tracker.class);
         } catch (HttpClientErrorException.NotFound e) {
@@ -67,15 +67,20 @@ public class TrackerService {
         }
     }
 
-    public TrackerData[] getTrackerData(String trackerId, Optional<Instant> from, Optional<Instant> to) {
+    public TrackerData[] getTrackerData(String trackerId,
+                                        Optional<Instant> from,
+                                        Optional<Instant> to,
+                                        Optional<Boolean> hasLocation) {
         try {
-            var uri = trackerServiceUri + "/tracker-data/get/%s?".formatted(trackerId);
-
+            var uri = trackerServiceUri + "/%s/data?".formatted(trackerId);
             if (from.isPresent()) {
                 uri += "from=%s&".formatted(from.get());
             }
             if (to.isPresent()) {
                 uri += "to=%s&".formatted(to.get());
+            }
+            if (hasLocation.isPresent()) {
+                uri += "hasLocation=%s".formatted(hasLocation.get());
             }
 
             return new RestTemplate().getForObject(uri, TrackerData[].class);
@@ -88,7 +93,7 @@ public class TrackerService {
 
     public TrackerData[] getLatestTrackersData(String userId) {
         try {
-            var uri = trackerServiceUri + "/tracker-data/get-latest?userId=%s".formatted(userId);
+            var uri = trackerServiceUri + "/latest?userId=%s".formatted(userId);
             return new RestTemplate().getForObject(uri, TrackerData[].class);
         } catch (RestClientException e) {
             LOGGER.error("Error in communicating with cnat-tracker-service: {}", e.getMessage());
@@ -98,7 +103,7 @@ public class TrackerService {
     }
 
     public void deleteTrackerById(String trackerId) {
-        String uri = trackerServiceUri + "/tracker/delete/%s".formatted(trackerId);
+        String uri = trackerServiceUri + "/%s".formatted(trackerId);
         try {
             new RestTemplate().delete(uri);
         } catch (RestClientException e) {
@@ -110,7 +115,7 @@ public class TrackerService {
 
     public TrackerRegisterResponse registerTracker(Tracker body) {
         try {
-            String uri = trackerServiceUri + "/tracker/register";
+            String uri = trackerServiceUri;
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
             var req = new HttpEntity<>(body, headers);
@@ -134,7 +139,7 @@ public class TrackerService {
     }
 
     public Tracker[] getUserTrackers(String userId) {
-        String uri = trackerServiceUri + "/tracker/get?userId=%s".formatted(userId);
+        String uri = trackerServiceUri + "?userId=%s".formatted(userId);
         try {
             return new RestTemplate().getForObject(uri, Tracker[].class);
         } catch (RestClientException e) {
