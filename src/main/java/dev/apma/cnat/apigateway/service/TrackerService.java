@@ -93,7 +93,7 @@ public class TrackerService {
 
     public TrackerData[] getLatestTrackersData(String userId) {
         try {
-            var uri = trackerServiceUri + "/latest?userId=%s".formatted(userId);
+            var uri = trackerServiceUri + "/data/latest?userId=%s".formatted(userId);
             return new RestTemplate().getForObject(uri, TrackerData[].class);
         } catch (RestClientException e) {
             LOGGER.error("Error in communicating with cnat-tracker-service: {}", e.getMessage());

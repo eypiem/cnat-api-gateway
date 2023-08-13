@@ -2,7 +2,7 @@ FROM maven:3-eclipse-temurin-17-alpine AS build
 WORKDIR /app
 COPY pom.xml .
 COPY src src
-COPY keystore.jks src/main/resources/keys
+COPY keystore.jks src/main/resources/keys/
 RUN mvn package -DskipTests
 RUN mkdir -p target/dependency && (cd target/dependency; jar -xf ../*.jar)
 
