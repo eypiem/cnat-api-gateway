@@ -14,7 +14,6 @@ import org.springframework.security.web.SecurityFilterChain;
 @Configuration
 @EnableWebSecurity
 public class AppSecurity {
-    //private final static Logger LOGGER = LoggerFactory.getLogger(AppSecurity.class);
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {

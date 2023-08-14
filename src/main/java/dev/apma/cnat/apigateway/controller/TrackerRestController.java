@@ -3,10 +3,10 @@ package dev.apma.cnat.apigateway.controller;
 
 import dev.apma.cnat.apigateway.dto.Tracker;
 import dev.apma.cnat.apigateway.dto.TrackerData;
-import dev.apma.cnat.apigateway.jwt.JwtHelper;
 import dev.apma.cnat.apigateway.request.TrackerDataRegisterRequest;
 import dev.apma.cnat.apigateway.response.GenericResponse;
 import dev.apma.cnat.apigateway.response.TrackerRegisterResponse;
+import dev.apma.cnat.apigateway.service.JwtHelper;
 import dev.apma.cnat.apigateway.service.TrackerService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,14 +26,20 @@ import java.util.Optional;
 public class TrackerRestController {
     private final static Logger LOGGER = LoggerFactory.getLogger(TrackerRestController.class);
 
-    @Autowired
-    private TrackerService trackerSvc;
+    private final TrackerService trackerSvc;
+
+    private final KafkaTemplate<String, TrackerDataRegisterRequest> kafkaTemplate;
+
+    private final String trackerDataRegisterTopic;
 
     @Autowired
-    private KafkaTemplate<String, TrackerDataRegisterRequest> kafkaTemplate;
-
-    @Value("${app.kafka.topics.tracker-data-register}")
-    private String trackerDataRegisterTopic;
+    public TrackerRestController(TrackerService trackerSvc,
+                                 KafkaTemplate<String, TrackerDataRegisterRequest> kafkaTemplate,
+                                 @Value("${app.kafka.topics.tracker-data-register}") String trackerDataRegisterTopic) {
+        this.trackerSvc = trackerSvc;
+        this.kafkaTemplate = kafkaTemplate;
+        this.trackerDataRegisterTopic = trackerDataRegisterTopic;
+    }
 
     @CrossOrigin(origins = "${app.cnat.web-app}")
     @PostMapping("")

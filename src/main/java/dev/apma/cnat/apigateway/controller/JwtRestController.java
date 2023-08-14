@@ -1,9 +1,9 @@
 package dev.apma.cnat.apigateway.controller;
 
 
-import dev.apma.cnat.apigateway.jwt.JwtHelper;
 import dev.apma.cnat.apigateway.request.UserAuthRequest;
 import dev.apma.cnat.apigateway.response.UserAuthResponse;
+import dev.apma.cnat.apigateway.service.JwtHelper;
 import dev.apma.cnat.apigateway.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,11 +20,15 @@ import java.util.Map;
 public class JwtRestController {
     private final static Logger LOGGER = LoggerFactory.getLogger(JwtRestController.class);
 
-    @Autowired
-    private JwtHelper jwtHelper;
+    private final JwtHelper jwtHelper;
+
+    private final UserService userSvc;
 
     @Autowired
-    private UserService userSvc;
+    public JwtRestController(JwtHelper jwtHelper, UserService userSvc) {
+        this.jwtHelper = jwtHelper;
+        this.userSvc = userSvc;
+    }
 
     @CrossOrigin(origins = "${app.cnat.web-app}")
     @PostMapping("login")

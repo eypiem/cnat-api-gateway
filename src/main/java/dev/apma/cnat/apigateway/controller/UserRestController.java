@@ -22,8 +22,11 @@ import org.springframework.web.server.ResponseStatusException;
 public class UserRestController {
     private final static Logger LOGGER = LoggerFactory.getLogger(UserRestController.class);
 
-    @Value("${app.cnat.user-service}")
-    private String userServiceUri;
+    private final String userServiceUri;
+
+    public UserRestController(@Value("${app.cnat.user-service}") String userServiceUri) {
+        this.userServiceUri = userServiceUri;
+    }
 
     @CrossOrigin(origins = "${app.cnat.web-app}")
     @PostMapping("/register")

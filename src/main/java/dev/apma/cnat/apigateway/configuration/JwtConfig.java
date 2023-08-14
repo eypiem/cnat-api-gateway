@@ -1,8 +1,9 @@
-package dev.apma.cnat.apigateway.jwt;
+package dev.apma.cnat.apigateway.configuration;
 
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,17 +22,24 @@ import java.security.interfaces.RSAPublicKey;
 public class JwtConfig {
     private final static Logger LOGGER = LoggerFactory.getLogger(JwtConfig.class);
 
-    @Value("${app.security.jwt.keystore-location}")
-    private String keyStorePath;
+    private final String keyStorePath;
 
-    @Value("${app.security.jwt.password}")
-    private String keyStorePassword;
+    private final String keyStorePassword;
 
-    @Value("${app.security.jwt.key-alias}")
-    private String keyAlias;
+    private final String keyAlias;
 
-    @Value("${app.security.jwt.passphrase}")
-    private String privateKeyPassphrase;
+    private final String privateKeyPassphrase;
+
+    @Autowired
+    public JwtConfig(@Value("${app.security.jwt.keystore-location}") String keyStorePath,
+                     @Value("${app.security.jwt.password}") String keyStorePassword,
+                     @Value("${app.security.jwt.key-alias}") String keyAlias,
+                     @Value("${app.security.jwt.passphrase}") String privateKeyPassphrase) {
+        this.keyStorePath = keyStorePath;
+        this.keyStorePassword = keyStorePassword;
+        this.keyAlias = keyAlias;
+        this.privateKeyPassphrase = privateKeyPassphrase;
+    }
 
     @Bean
     public KeyStore keyStore() {

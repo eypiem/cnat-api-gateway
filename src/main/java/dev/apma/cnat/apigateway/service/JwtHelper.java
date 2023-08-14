@@ -1,4 +1,4 @@
-package dev.apma.cnat.apigateway.jwt;
+package dev.apma.cnat.apigateway.service;
 
 
 import com.auth0.jwt.JWT;
@@ -8,7 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.security.interfaces.RSAPrivateKey;
@@ -20,7 +20,7 @@ import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-@Component
+@Service
 public class JwtHelper {
     public static final String SUBJECT_ATTRIBUTE = "sub";
     public static final String ROLE_ATTRIBUTE = "role";
@@ -41,11 +41,15 @@ public class JwtHelper {
         }
     }
 
-    @Autowired
-    private RSAPrivateKey privateKey;
+    private final RSAPrivateKey privateKey;
+
+    private final RSAPublicKey publicKey;
 
     @Autowired
-    private RSAPublicKey publicKey;
+    public JwtHelper(RSAPrivateKey privateKey, RSAPublicKey publicKey) {
+        this.privateKey = privateKey;
+        this.publicKey = publicKey;
+    }
 
     public String createJwtForClaims(String subject, Map<String, String> claims) {
         Calendar calendar = Calendar.getInstance();

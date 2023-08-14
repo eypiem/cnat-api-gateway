@@ -3,7 +3,7 @@ package dev.apma.cnat.apigateway.controller;
 
 import dev.apma.cnat.apigateway.dto.Tracker;
 import dev.apma.cnat.apigateway.dto.TrackerData;
-import dev.apma.cnat.apigateway.jwt.JwtHelper;
+import dev.apma.cnat.apigateway.service.JwtHelper;
 import dev.apma.cnat.apigateway.service.TrackerService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

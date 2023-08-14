@@ -20,8 +20,11 @@ import org.springframework.web.server.ResponseStatusException;
 public class UserService {
     private final static Logger LOGGER = LoggerFactory.getLogger(UserService.class);
 
-    @Value("${app.cnat.user-service}")
-    private String userServiceUri;
+    private final String userServiceUri;
+
+    public UserService(@Value("${app.cnat.user-service}") String userServiceUri) {
+        this.userServiceUri = userServiceUri;
+    }
 
     public Boolean emailAndPasswordIsValid(UserAuthRequest req) {
         String uri = userServiceUri + "/auth";

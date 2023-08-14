@@ -3,7 +3,6 @@ package dev.apma.cnat.apigateway.service;
 
 import dev.apma.cnat.apigateway.dto.Tracker;
 import dev.apma.cnat.apigateway.dto.TrackerData;
-import dev.apma.cnat.apigateway.jwt.JwtHelper;
 import dev.apma.cnat.apigateway.response.GenericResponse;
 import dev.apma.cnat.apigateway.response.TrackerRegisterResponse;
 import org.slf4j.Logger;
@@ -31,11 +30,15 @@ import java.util.function.Supplier;
 public class TrackerService {
     private final static Logger LOGGER = LoggerFactory.getLogger(TrackerService.class);
 
-    @Value("${app.cnat.tracker-service}")
-    private String trackerServiceUri;
+    private final String trackerServiceUri;
+
+    private final JwtHelper jwtHelper;
 
     @Autowired
-    private JwtHelper jwtHelper;
+    public TrackerService(@Value("${app.cnat.tracker-service}") String trackerServiceUri, JwtHelper jwtHelper) {
+        this.trackerServiceUri = trackerServiceUri;
+        this.jwtHelper = jwtHelper;
+    }
 
     public <T> T onTrackerMatchUserOrElseThrow(String trackerId, String userId, Supplier<T> onMatch) {
         var tracker = getTrackerById(trackerId);
