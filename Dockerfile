@@ -3,7 +3,7 @@ WORKDIR /app
 COPY pom.xml .
 COPY src src
 COPY keystore.jks src/main/resources/keys/
-RUN mvn package -DskipTests
+RUN mvn clean package -DskipTests
 RUN mkdir -p target/dependency && (cd target/dependency; jar -xf ../*.jar)
 
 FROM eclipse-temurin:17-jre-alpine
