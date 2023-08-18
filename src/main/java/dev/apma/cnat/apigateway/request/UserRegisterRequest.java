@@ -1,5 +1,10 @@
 package dev.apma.cnat.apigateway.request;
 
 
-public record UserRegisterRequest(String email, String password, String firstName, String lastName) {
+import jakarta.validation.constraints.NotBlank;
+
+public record UserRegisterRequest(@NotBlank String email,
+                                  @NotBlank String password,
+                                  @NotBlank String firstName,
+                                  @NotBlank String lastName) {
 }

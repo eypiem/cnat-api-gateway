@@ -24,7 +24,7 @@ public class AppSecurity {
                         "/api-docs.yaml",
                         "/swagger-ui/**",
                         "/error",
-                        "/auth/login",
+                        "/user/auth",
                         "/user/register").permitAll().anyRequest().authenticated())
                 .oauth2ResourceServer((oauth2) -> oauth2.jwt(Customizer.withDefaults()))
                 .build();

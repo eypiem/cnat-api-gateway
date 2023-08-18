@@ -1,20 +1,18 @@
 package dev.apma.cnat.apigateway.controller;
 
 
+import dev.apma.cnat.apigateway.request.UserAuthRequest;
 import dev.apma.cnat.apigateway.request.UserRegisterRequest;
 import dev.apma.cnat.apigateway.response.GenericResponse;
+import dev.apma.cnat.apigateway.response.UserAuthResponse;
+import dev.apma.cnat.apigateway.service.UserService;
+import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.HttpStatusCodeException;
-import org.springframework.web.client.RestClientException;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.server.ResponseStatusException;
 
 @RestController
@@ -22,43 +20,35 @@ import org.springframework.web.server.ResponseStatusException;
 public class UserRestController {
     private final static Logger LOGGER = LoggerFactory.getLogger(UserRestController.class);
 
-    private final String userServiceUri;
+    private final UserService userSvc;
 
-    public UserRestController(@Value("${app.cnat.user-service}") String userServiceUri) {
-        this.userServiceUri = userServiceUri;
+    @Autowired
+    public UserRestController(UserService userSvc) {
+        this.userSvc = userSvc;
+    }
+
+    @CrossOrigin(origins = "${app.cnat.web-app}")
+    @PostMapping("auth")
+    public UserAuthResponse auth(@Valid @RequestBody UserAuthRequest uar) {
+        LOGGER.info("post /user/auth: {}", uar);
+        return userSvc.auth(uar);
     }
 
     @CrossOrigin(origins = "${app.cnat.web-app}")
     @PostMapping("/register")
-    public GenericResponse register(@RequestBody UserRegisterRequest user) {
-        LOGGER.info("/user/register: {}", user);
-
-        String uri = userServiceUri + "/register";
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        HttpEntity<UserRegisterRequest> request = new HttpEntity<>(user, headers);
-
-        try {
-            return new RestTemplate().postForObject(uri, request, GenericResponse.class);
-        } catch (HttpStatusCodeException e) {
-            GenericResponse gr = e.getResponseBodyAs(GenericResponse.class);
-            throw new ResponseStatusException(e.getStatusCode(), gr != null ? gr.message() : null);
-        } catch (RestClientException e) {
-            LOGGER.error("Error in communicating with cnat-tracker-service: {}", e.getMessage());
-            throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE,
-                    "Error in communicating with cnat-tracker-service");
-        }
+    public GenericResponse register(@Valid @RequestBody UserRegisterRequest urr) {
+        LOGGER.info("post /user/register: {}", urr);
+        return userSvc.register(urr);
     }
 
     @CrossOrigin(origins = "${app.cnat.web-app}")
-    @DeleteMapping("/delete")
+    @DeleteMapping("/")
     public GenericResponse delete(Authentication auth) {
-        LOGGER.info("/delete");
-
+        LOGGER.info("delete /user");
         //        return JwtHelper.onRoleMatchOrElseThrow(auth, JwtHelper.Role.USER, (subject) -> {
         //            /// TODO: Implement
         //            throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED);
         //        });
-        return null;
+        throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED, "Not yet implemented");
     }
 }
