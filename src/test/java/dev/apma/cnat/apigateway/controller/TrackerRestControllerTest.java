@@ -52,14 +52,14 @@ class TrackerRestControllerTest {
 
     @BeforeAll
     void setup() {
-        userJwt = jwtHelper.createJwtForClaims("1@test.com",
-                Map.of(JwtHelper.ROLE_ATTRIBUTE, JwtHelper.Role.USER.toString()));
-        trackerJwt =
-                jwtHelper.createJwtForClaims("1", Map.of(JwtHelper.ROLE_ATTRIBUTE, JwtHelper.Role.TRACKER.toString()));
-
         t1 = new Tracker("1", "1@test.com", "name1");
         td1 = new TrackerData(t1, Map.of("param1", 100), Instant.parse("2023-01-01T00:00:00.0Z"));
         td2 = new TrackerData(t1, Map.of("param1", 80), Instant.parse("2023-01-01T00:00:00.1Z"));
+
+        userJwt = jwtHelper.createJwtForClaims(t1.userId(),
+                Map.of(JwtHelper.ROLE_ATTRIBUTE, JwtHelper.Role.USER.toString()));
+        trackerJwt = jwtHelper.createJwtForClaims(t1.id(),
+                Map.of(JwtHelper.ROLE_ATTRIBUTE, JwtHelper.Role.TRACKER.toString()));
 
     }
 
@@ -124,7 +124,7 @@ class TrackerRestControllerTest {
     @Test
     public void getLatestTrackerData_unauthorized_2() throws Exception {
         when(trackerSvc.getLatestTrackersData(t1.userId())).thenReturn(new TrackerData[]{td1, td2});
-        
+
         mockMvc.perform(get("/trackers/data/latest").header("Authorization", "Bearer " + trackerJwt))
                 .andExpect(status().isUnauthorized());
     }

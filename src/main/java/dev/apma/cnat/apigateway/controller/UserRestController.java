@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 @RestController
-@RequestMapping("/user")
+@RequestMapping("/users")
 public class UserRestController {
     private final static Logger LOGGER = LoggerFactory.getLogger(UserRestController.class);
 
@@ -28,23 +28,23 @@ public class UserRestController {
     }
 
     @CrossOrigin(origins = "${app.cnat.web-app}")
-    @PostMapping("auth")
-    public UserAuthResponse auth(@Valid @RequestBody UserAuthRequest uar) {
-        LOGGER.info("post /user/auth: {}", uar);
-        return userSvc.auth(uar);
-    }
-
-    @CrossOrigin(origins = "${app.cnat.web-app}")
-    @PostMapping("/register")
+    @PostMapping("")
     public GenericResponse register(@Valid @RequestBody UserRegisterRequest urr) {
-        LOGGER.info("post /user/register: {}", urr);
+        LOGGER.info("post /users: {}", urr);
         return userSvc.register(urr);
     }
 
     @CrossOrigin(origins = "${app.cnat.web-app}")
-    @DeleteMapping("/")
+    @PostMapping("/auth")
+    public UserAuthResponse auth(@Valid @RequestBody UserAuthRequest uar) {
+        LOGGER.info("post /users/auth: {}", uar);
+        return userSvc.auth(uar);
+    }
+
+    @CrossOrigin(origins = "${app.cnat.web-app}")
+    @DeleteMapping("")
     public GenericResponse delete(Authentication auth) {
-        LOGGER.info("delete /user");
+        LOGGER.info("delete /users");
         //        return JwtHelper.onRoleMatchOrElseThrow(auth, JwtHelper.Role.USER, (subject) -> {
         //            /// TODO: Implement
         //            throw new ResponseStatusException(HttpStatus.NOT_IMPLEMENTED);
