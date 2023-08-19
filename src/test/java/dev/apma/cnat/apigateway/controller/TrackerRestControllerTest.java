@@ -2,9 +2,8 @@ package dev.apma.cnat.apigateway.controller;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import dev.apma.cnat.apigateway.dto.Tracker;
-import dev.apma.cnat.apigateway.dto.TrackerData;
-import dev.apma.cnat.apigateway.response.TrackerRegisterResponse;
+import dev.apma.cnat.apigateway.dto.TrackerDTO;
+import dev.apma.cnat.apigateway.dto.TrackerDataDTO;
 import dev.apma.cnat.apigateway.service.JwtHelper;
 import dev.apma.cnat.apigateway.service.TrackerService;
 import org.junit.jupiter.api.AfterAll;
@@ -46,15 +45,15 @@ class TrackerRestControllerTest {
 
     private String trackerJwt;
 
-    private Tracker t1;
-    private TrackerData td1;
-    private TrackerData td2;
+    private TrackerDTO t1;
+    private TrackerDataDTO td1;
+    private TrackerDataDTO td2;
 
     @BeforeAll
     void setup() {
-        t1 = new Tracker("1", "1@test.com", "name1");
-        td1 = new TrackerData(t1, Map.of("param1", 100), Instant.parse("2023-01-01T00:00:00.0Z"));
-        td2 = new TrackerData(t1, Map.of("param1", 80), Instant.parse("2023-01-01T00:00:00.1Z"));
+        t1 = new TrackerDTO("1", "1@test.com", "name1");
+        td1 = new TrackerDataDTO(t1, Map.of("param1", 100), Instant.parse("2023-01-01T00:00:00.0Z"));
+        td2 = new TrackerDataDTO(t1, Map.of("param1", 80), Instant.parse("2023-01-01T00:00:00.1Z"));
 
         userJwt = jwtHelper.createJwtForClaims(t1.userId(),
                 Map.of(JwtHelper.ROLE_ATTRIBUTE, JwtHelper.Role.USER.toString()));
@@ -74,19 +73,23 @@ class TrackerRestControllerTest {
 
     @Test
     public void register_authorized() throws Exception {
-        when(trackerSvc.registerTracker(isA(Tracker.class))).thenReturn(new TrackerRegisterResponse(t1, trackerJwt));
+        when(trackerSvc.registerTracker(isA(TrackerDTO.class))).thenReturn(new TrackerDTO(t1.id(),
+                t1.userId(),
+                t1.name()));
 
         mockMvc.perform(post("/trackers").header("Authorization", "Bearer " + userJwt)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(t1)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("tracker.id").value(t1.id()))
-                .andExpect(jsonPath("accessToken").value(trackerJwt));
+                .andExpect(jsonPath("accessToken").isNotEmpty());
     }
 
     @Test
     public void register_unauthorized_1() throws Exception {
-        when(trackerSvc.registerTracker(isA(Tracker.class))).thenReturn(new TrackerRegisterResponse(t1, trackerJwt));
+        when(trackerSvc.registerTracker(isA(TrackerDTO.class))).thenReturn(new TrackerDTO(t1.id(),
+                t1.userId(),
+                t1.name()));
 
         mockMvc.perform(post("/trackers").contentType(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -95,7 +98,9 @@ class TrackerRestControllerTest {
 
     @Test
     public void register_unauthorized_2() throws Exception {
-        when(trackerSvc.registerTracker(isA(Tracker.class))).thenReturn(new TrackerRegisterResponse(t1, trackerJwt));
+        when(trackerSvc.registerTracker(isA(TrackerDTO.class))).thenReturn(new TrackerDTO(t1.id(),
+                t1.userId(),
+                t1.name()));
 
         mockMvc.perform(post("/trackers").header("Authorization", "Bearer " + trackerJwt)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -104,26 +109,26 @@ class TrackerRestControllerTest {
 
     @Test
     public void getLatestTrackerData_authorized() throws Exception {
-        when(trackerSvc.getLatestTrackersData(t1.userId())).thenReturn(new TrackerData[]{td1, td2});
+        when(trackerSvc.getLatestTrackersData(t1.userId())).thenReturn(new TrackerDataDTO[]{td1, td2});
 
         mockMvc.perform(get("/trackers/data/latest").header("Authorization", "Bearer " + userJwt))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].tracker.id").value(t1.id()))
-                .andExpect(jsonPath("$[0].data.param1").value(td1.data().get("param1")))
-                .andExpect(jsonPath("$[1].tracker.id").value(t1.id()))
-                .andExpect(jsonPath("$[1].data.param1").value(td2.data().get("param1")));
+                .andExpect(jsonPath("latestTrackerData[0].data.param1").value(td1.data().get("param1")))
+                .andExpect(jsonPath("latestTrackerData[0].timestamp").value(td1.timestamp().toString()))
+                .andExpect(jsonPath("latestTrackerData[1].data.param1").value(td2.data().get("param1")))
+                .andExpect(jsonPath("latestTrackerData[1].timestamp").value(td2.timestamp().toString()));
     }
 
     @Test
     public void getLatestTrackerData_unauthorized_1() throws Exception {
-        when(trackerSvc.getLatestTrackersData(t1.userId())).thenReturn(new TrackerData[]{td1, td2});
+        when(trackerSvc.getLatestTrackersData(t1.userId())).thenReturn(new TrackerDataDTO[]{td1, td2});
 
         mockMvc.perform(get("/trackers/data/latest")).andExpect(status().isUnauthorized());
     }
 
     @Test
     public void getLatestTrackerData_unauthorized_2() throws Exception {
-        when(trackerSvc.getLatestTrackersData(t1.userId())).thenReturn(new TrackerData[]{td1, td2});
+        when(trackerSvc.getLatestTrackersData(t1.userId())).thenReturn(new TrackerDataDTO[]{td1, td2});
 
         mockMvc.perform(get("/trackers/data/latest").header("Authorization", "Bearer " + trackerJwt))
                 .andExpect(status().isUnauthorized());
