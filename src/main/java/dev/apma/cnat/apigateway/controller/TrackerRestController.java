@@ -8,6 +8,7 @@ import dev.apma.cnat.apigateway.request.TrackerRegisterRequest;
 import dev.apma.cnat.apigateway.response.*;
 import dev.apma.cnat.apigateway.service.JwtHelper;
 import dev.apma.cnat.apigateway.service.TrackerService;
+import io.swagger.v3.oas.annotations.Operation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,6 +48,7 @@ public class TrackerRestController {
         this.trackerDataRegisterTopic = trackerDataRegisterTopic;
     }
 
+    @Operation(description = "Register a new tracker for a user")
     @CrossOrigin(origins = "${app.cnat.web-app}")
     @PostMapping("")
     public TrackerRegisterResponse register(Authentication auth, @RequestBody TrackerRegisterRequest trr) {
@@ -65,6 +67,7 @@ public class TrackerRestController {
         });
     }
 
+    @Operation(description = "Delete a tracker for a user")
     @CrossOrigin(origins = "${app.cnat.web-app}")
     @DeleteMapping("/{trackerId}")
     public void deleteUserTracker(Authentication auth, @PathVariable String trackerId) {
@@ -77,6 +80,7 @@ public class TrackerRestController {
         });
     }
 
+    @Operation(description = "Retrieve user's trackers")
     @CrossOrigin(origins = "${app.cnat.web-app}")
     @GetMapping("")
     public TrackersGetResponse getUserTrackers(Authentication auth) {
@@ -87,6 +91,7 @@ public class TrackerRestController {
         });
     }
 
+    @Operation(description = "Retrieve a tracker for a user")
     @CrossOrigin(origins = "${app.cnat.web-app}")
     @GetMapping("/{trackerId}")
     public TrackerGetResponse getTracker(Authentication auth, @PathVariable String trackerId) {
@@ -97,6 +102,7 @@ public class TrackerRestController {
         });
     }
 
+    @Operation(description = "Register a new tracker data for a tracker")
     @PostMapping("/data")
     public void register(Authentication auth, @RequestBody TrackerDataRegisterRequest tdrr) {
         LOGGER.info("post /trackers/data: {}", tdrr);
@@ -108,6 +114,7 @@ public class TrackerRestController {
         });
     }
 
+    @Operation(description = "Retrieve a tracker data for a user")
     @CrossOrigin(origins = "${app.cnat.web-app}")
     @GetMapping("/{trackerId}/data")
     public TrackerDataGetResponse getTrackerData(Authentication auth,
@@ -128,6 +135,7 @@ public class TrackerRestController {
         });
     }
 
+    @Operation(description = "Retrieve the latest data of each of the user's trackers")
     @CrossOrigin(origins = "${app.cnat.web-app}")
     @GetMapping("/data/latest")
     public LatestTrackerDataGetResponse getLatestTrackersData(Authentication auth) {
