@@ -4,9 +4,8 @@ package dev.apma.cnat.apigateway.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.apma.cnat.apigateway.request.UserAuthRequest;
 import dev.apma.cnat.apigateway.request.UserRegisterRequest;
-import dev.apma.cnat.apigateway.response.GenericResponse;
 import dev.apma.cnat.apigateway.response.UserAuthResponse;
-import dev.apma.cnat.apigateway.service.JwtHelper;
+import dev.apma.cnat.apigateway.service.JwtHelperImpl;
 import dev.apma.cnat.apigateway.service.UserService;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -36,7 +35,7 @@ class UserRestControllerTest {
     private MockMvc mockMvc;
 
     @Autowired
-    private JwtHelper jwtHelper;
+    private JwtHelperImpl jwtHelper;
 
     private String userJwt;
 
@@ -46,7 +45,7 @@ class UserRestControllerTest {
     @BeforeAll
     void setup() {
         userJwt = jwtHelper.createJwtForClaims("1@test.com",
-                Map.of(JwtHelper.ROLE_ATTRIBUTE, JwtHelper.Role.USER.toString()));
+                Map.of(JwtHelperImpl.ROLE_ATTRIBUTE, JwtHelperImpl.Role.USER.toString()));
     }
 
     @AfterAll
@@ -56,7 +55,6 @@ class UserRestControllerTest {
 
     @Test
     public void register_valid() throws Exception {
-        when(userSvc.register(isA(UserRegisterRequest.class))).thenReturn(new GenericResponse("OK"));
         var urr = new UserRegisterRequest("1@test.com", "password1", "fn1", "ln1");
 
         mockMvc.perform(post("/users").contentType(MediaType.APPLICATION_JSON)
@@ -65,15 +63,20 @@ class UserRestControllerTest {
 
     @Test
     public void register_invalid_1() throws Exception {
-        when(userSvc.register(isA(UserRegisterRequest.class))).thenReturn(new GenericResponse("OK"));
-
         mockMvc.perform(post("/users").contentType(MediaType.APPLICATION_JSON)).andExpect(status().isBadRequest());
     }
 
     @Test
     public void register_invalid_2() throws Exception {
-        when(userSvc.register(isA(UserRegisterRequest.class))).thenReturn(new GenericResponse("OK"));
         var urr = new UserRegisterRequest(null, "password1", "fn1", "ln1");
+
+        mockMvc.perform(post("/users").contentType(MediaType.APPLICATION_JSON)
+                .content(new ObjectMapper().writeValueAsString(urr))).andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void register_invalid_3() throws Exception {
+        var urr = new UserRegisterRequest("a@a.com", "        ", "fn1", "ln1");
 
         mockMvc.perform(post("/users").contentType(MediaType.APPLICATION_JSON)
                 .content(new ObjectMapper().writeValueAsString(urr))).andExpect(status().isBadRequest());

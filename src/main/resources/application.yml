@@ -35,6 +35,13 @@ app:
     user-service: ${CNAT_USER_SERVICE_URI}
     web-app: ${CNAT_WEB_APP_ORIGIN}
 
+management:
+  endpoint:
+    health:
+      #show-details: always
+      probes:
+        enabled: true
+
 springdoc:
   api-docs:
     path: /api-docs

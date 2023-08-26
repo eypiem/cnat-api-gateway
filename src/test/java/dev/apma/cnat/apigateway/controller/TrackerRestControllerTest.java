@@ -4,7 +4,10 @@ package dev.apma.cnat.apigateway.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.apma.cnat.apigateway.dto.TrackerDTO;
 import dev.apma.cnat.apigateway.dto.TrackerDataDTO;
+import dev.apma.cnat.apigateway.response.LatestTrackerDataGetResponse;
+import dev.apma.cnat.apigateway.response.TrackerRegisterResponse;
 import dev.apma.cnat.apigateway.service.JwtHelper;
+import dev.apma.cnat.apigateway.service.JwtHelperImpl;
 import dev.apma.cnat.apigateway.service.TrackerService;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -18,6 +21,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Map;
 
 import static org.mockito.ArgumentMatchers.isA;
@@ -56,9 +60,9 @@ class TrackerRestControllerTest {
         td2 = new TrackerDataDTO(t1, Map.of("param1", 80), Instant.parse("2023-01-01T00:00:00.1Z"));
 
         userJwt = jwtHelper.createJwtForClaims(t1.userId(),
-                Map.of(JwtHelper.ROLE_ATTRIBUTE, JwtHelper.Role.USER.toString()));
+                Map.of(JwtHelperImpl.ROLE_ATTRIBUTE, JwtHelperImpl.Role.USER.toString()));
         trackerJwt = jwtHelper.createJwtForClaims(t1.id(),
-                Map.of(JwtHelper.ROLE_ATTRIBUTE, JwtHelper.Role.TRACKER.toString()));
+                Map.of(JwtHelperImpl.ROLE_ATTRIBUTE, JwtHelperImpl.Role.TRACKER.toString()));
 
     }
 
@@ -73,9 +77,7 @@ class TrackerRestControllerTest {
 
     @Test
     public void register_authorized() throws Exception {
-        when(trackerSvc.registerTracker(isA(TrackerDTO.class))).thenReturn(new TrackerDTO(t1.id(),
-                t1.userId(),
-                t1.name()));
+        when(trackerSvc.registerTracker(isA(TrackerDTO.class))).thenReturn(new TrackerRegisterResponse(t1, trackerJwt));
 
         mockMvc.perform(post("/trackers").header("Authorization", "Bearer " + userJwt)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -87,9 +89,7 @@ class TrackerRestControllerTest {
 
     @Test
     public void register_unauthorized_1() throws Exception {
-        when(trackerSvc.registerTracker(isA(TrackerDTO.class))).thenReturn(new TrackerDTO(t1.id(),
-                t1.userId(),
-                t1.name()));
+        when(trackerSvc.registerTracker(isA(TrackerDTO.class))).thenReturn(new TrackerRegisterResponse(t1, trackerJwt));
 
         mockMvc.perform(post("/trackers").contentType(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -98,9 +98,7 @@ class TrackerRestControllerTest {
 
     @Test
     public void register_unauthorized_2() throws Exception {
-        when(trackerSvc.registerTracker(isA(TrackerDTO.class))).thenReturn(new TrackerDTO(t1.id(),
-                t1.userId(),
-                t1.name()));
+        when(trackerSvc.registerTracker(isA(TrackerDTO.class))).thenReturn(new TrackerRegisterResponse(t1, trackerJwt));
 
         mockMvc.perform(post("/trackers").header("Authorization", "Bearer " + trackerJwt)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -109,7 +107,8 @@ class TrackerRestControllerTest {
 
     @Test
     public void getLatestTrackerData_authorized() throws Exception {
-        when(trackerSvc.getLatestTrackersData(t1.userId())).thenReturn(new TrackerDataDTO[]{td1, td2});
+        when(trackerSvc.getLatestTrackersData(t1.userId())).thenReturn(LatestTrackerDataGetResponse.fromTrackerDataDTOs(
+                List.of(td1, td2)));
 
         mockMvc.perform(get("/trackers/data/latest").header("Authorization", "Bearer " + userJwt))
                 .andExpect(status().isOk())
@@ -121,14 +120,16 @@ class TrackerRestControllerTest {
 
     @Test
     public void getLatestTrackerData_unauthorized_1() throws Exception {
-        when(trackerSvc.getLatestTrackersData(t1.userId())).thenReturn(new TrackerDataDTO[]{td1, td2});
+        when(trackerSvc.getLatestTrackersData(t1.userId())).thenReturn(LatestTrackerDataGetResponse.fromTrackerDataDTOs(
+                List.of(td1, td2)));
 
         mockMvc.perform(get("/trackers/data/latest")).andExpect(status().isUnauthorized());
     }
 
     @Test
     public void getLatestTrackerData_unauthorized_2() throws Exception {
-        when(trackerSvc.getLatestTrackersData(t1.userId())).thenReturn(new TrackerDataDTO[]{td1, td2});
+        when(trackerSvc.getLatestTrackersData(t1.userId())).thenReturn(LatestTrackerDataGetResponse.fromTrackerDataDTOs(
+                List.of(td1, td2)));
 
         mockMvc.perform(get("/trackers/data/latest").header("Authorization", "Bearer " + trackerJwt))
                 .andExpect(status().isUnauthorized());
