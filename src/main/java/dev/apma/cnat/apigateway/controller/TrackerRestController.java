@@ -104,12 +104,17 @@ public class TrackerRestController {
                                                  @PathVariable String trackerId,
                                                  @RequestParam Optional<Instant> from,
                                                  @RequestParam Optional<Instant> to,
-                                                 @RequestParam Optional<Boolean> hasLocation) throws CNATServiceException {
+                                                 @RequestParam Optional<Boolean> hasCoordinates,
+                                                 @RequestParam Optional<Integer> limit) throws CNATServiceException {
         LOGGER.info("get /trackers/{}/data from: {} to: {}", trackerId, from, to);
 
         var subject = JwtHelper.getSubjectForRole(auth, JwtHelper.Role.USER);
         trackerSvc.checkTrackerBelongsToUser(trackerId, subject);
-        return trackerSvc.getTrackerData(trackerId, from, to, hasLocation);
+        return trackerSvc.getTrackerData(trackerId,
+                from.orElse(null),
+                to.orElse(null),
+                hasCoordinates.orElse(null),
+                limit.orElse(null));
     }
 
     @Operation(description = "Retrieve the latest data of each of the user's trackers")

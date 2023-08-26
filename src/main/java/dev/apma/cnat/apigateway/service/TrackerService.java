@@ -5,9 +5,9 @@ import dev.apma.cnat.apigateway.dto.TrackerDTO;
 import dev.apma.cnat.apigateway.exception.FieldValidationException;
 import dev.apma.cnat.apigateway.exception.TrackerServiceException;
 import dev.apma.cnat.apigateway.response.*;
+import jakarta.annotation.Nullable;
 
 import java.time.Instant;
-import java.util.Optional;
 
 public interface TrackerService {
 
@@ -16,9 +16,10 @@ public interface TrackerService {
     TrackerGetResponse getTrackerById(String trackerId) throws TrackerServiceException;
 
     TrackerDataGetResponse getTrackerData(String trackerId,
-                                          Optional<Instant> from,
-                                          Optional<Instant> to,
-                                          Optional<Boolean> hasLocation) throws TrackerServiceException;
+                                          @Nullable Instant from,
+                                          @Nullable Instant to,
+                                          @Nullable Boolean hasLocation,
+                                          @Nullable Integer limit) throws TrackerServiceException;
 
     LatestTrackerDataGetResponse getLatestTrackersData(String userId) throws TrackerServiceException;
 

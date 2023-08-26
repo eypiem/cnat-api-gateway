@@ -8,6 +8,7 @@ import dev.apma.cnat.apigateway.exception.FieldValidationException;
 import dev.apma.cnat.apigateway.exception.TrackerOwnershipMismatchException;
 import dev.apma.cnat.apigateway.exception.TrackerServiceException;
 import dev.apma.cnat.apigateway.response.*;
+import jakarta.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +27,6 @@ import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 @Service
 public class TrackerServiceImpl implements TrackerService {
@@ -67,20 +67,24 @@ public class TrackerServiceImpl implements TrackerService {
 
     @Override
     public TrackerDataGetResponse getTrackerData(String trackerId,
-                                                 Optional<Instant> from,
-                                                 Optional<Instant> to,
-                                                 Optional<Boolean> hasLocation) throws TrackerServiceException {
+                                                 @Nullable Instant from,
+                                                 @Nullable Instant to,
+                                                 @Nullable Boolean hasCoordinates,
+                                                 @Nullable Integer limit) throws TrackerServiceException {
         var uri = trackerServiceUri + "/%s/data?".formatted(trackerId);
 
         try {
-            if (from.isPresent()) {
-                uri += "from=%s&".formatted(from.get());
+            if (from != null) {
+                uri += "from=%s&".formatted(from);
             }
-            if (to.isPresent()) {
-                uri += "to=%s&".formatted(to.get());
+            if (to != null) {
+                uri += "to=%s&".formatted(to);
             }
-            if (hasLocation.isPresent()) {
-                uri += "hasLocation=%s".formatted(hasLocation.get());
+            if (hasCoordinates != null) {
+                uri += "hasCoordinates=%s&".formatted(hasCoordinates);
+            }
+            if (limit != null) {
+                uri += "limit=%d&".formatted(limit);
             }
             var r = new RestTemplate().getForObject(uri, TrackerDataDTO[].class);
             return TrackerDataGetResponse.fromTrackerDataDTOs(r == null ? List.of() : Arrays.asList(r));
