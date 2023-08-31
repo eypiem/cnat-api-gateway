@@ -1,4 +1,4 @@
-package dev.apma.cnat.apigateway.exception;
+package dev.apma.cnat.apigateway.exception.userservice;
 
 
 public class UserServiceUnauthorizedException extends UserServiceException {

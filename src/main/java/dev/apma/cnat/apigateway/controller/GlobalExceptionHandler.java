@@ -2,7 +2,12 @@ package dev.apma.cnat.apigateway.controller;
 
 
 import dev.apma.cnat.apigateway.dto.ValidationErrorsDTO;
-import dev.apma.cnat.apigateway.exception.*;
+import dev.apma.cnat.apigateway.exception.CNATServiceException;
+import dev.apma.cnat.apigateway.exception.FieldValidationException;
+import dev.apma.cnat.apigateway.exception.jwtservice.JwtRoleMismatchException;
+import dev.apma.cnat.apigateway.exception.trackerservice.TrackerOwnershipMismatchException;
+import dev.apma.cnat.apigateway.exception.userservice.UserAlreadyExistsException;
+import dev.apma.cnat.apigateway.exception.userservice.UserServiceUnauthorizedException;
 import jakarta.annotation.Nullable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;

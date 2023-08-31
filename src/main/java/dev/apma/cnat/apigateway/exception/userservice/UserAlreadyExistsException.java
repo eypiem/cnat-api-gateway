@@ -1,15 +1,10 @@
-package dev.apma.cnat.apigateway.exception;
+package dev.apma.cnat.apigateway.exception.userservice;
 
-
-import java.io.Serial;
 
 public final class UserAlreadyExistsException extends UserServiceException {
 
-    @Serial
-    private static final long serialVersionUID = 1L;
-
     public UserAlreadyExistsException() {
-        super();
+        super("An account for that email already exists");
     }
 
     public UserAlreadyExistsException(String message, Throwable cause) {

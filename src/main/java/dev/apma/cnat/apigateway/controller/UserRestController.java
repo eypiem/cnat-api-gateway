@@ -3,7 +3,7 @@ package dev.apma.cnat.apigateway.controller;
 
 import dev.apma.cnat.apigateway.exception.CNATServiceException;
 import dev.apma.cnat.apigateway.exception.FieldValidationException;
-import dev.apma.cnat.apigateway.exception.UserServiceException;
+import dev.apma.cnat.apigateway.exception.userservice.UserServiceException;
 import dev.apma.cnat.apigateway.request.UserAuthRequest;
 import dev.apma.cnat.apigateway.request.UserDeleteRequest;
 import dev.apma.cnat.apigateway.request.UserRegisterRequest;

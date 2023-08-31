@@ -1,5 +1,7 @@
-package dev.apma.cnat.apigateway.exception;
+package dev.apma.cnat.apigateway.exception.jwtservice;
 
+
+import dev.apma.cnat.apigateway.exception.CNATServiceException;
 
 public class JwtServiceException extends CNATServiceException {
 

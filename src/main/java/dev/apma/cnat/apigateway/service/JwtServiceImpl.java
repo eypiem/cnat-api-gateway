@@ -14,19 +14,32 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Map;
 
+/**
+ * An implementation of the {@code JwtService} interface.
+ *
+ * @author Amir Parsa Mahdian
+ * @see dev.apma.cnat.apigateway.service.JwtService
+ */
 @Service
-public class JwtHelperImpl implements JwtHelper {
+public class JwtServiceImpl implements JwtService {
 
-    private final RSAPrivateKey privateKey;
-
+    /**
+     * The RSA public key used for signing JWTs
+     */
     private final RSAPublicKey publicKey;
 
+    /**
+     * The RSA private key used for signing JWTs
+     */
+    private final RSAPrivateKey privateKey;
+
     @Autowired
-    public JwtHelperImpl(RSAPrivateKey privateKey, RSAPublicKey publicKey) {
-        this.privateKey = privateKey;
+    public JwtServiceImpl(RSAPublicKey publicKey, RSAPrivateKey privateKey) {
         this.publicKey = publicKey;
+        this.privateKey = privateKey;
     }
 
+    @Override
     public String createJwtForClaims(String subject, Map<String, String> claims) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeInMillis(Instant.now().toEpochMilli());
@@ -42,6 +55,7 @@ public class JwtHelperImpl implements JwtHelper {
                 .sign(Algorithm.RSA256(publicKey, privateKey));
     }
 
+    @Override
     public String createJwtForClaimsWithNoExpiry(String subject, Map<String, String> claims) {
         JWTCreator.Builder jwtBuilder = JWT.create().withSubject(subject);
         claims.forEach(jwtBuilder::withClaim);

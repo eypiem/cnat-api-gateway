@@ -1,5 +1,7 @@
-package dev.apma.cnat.apigateway.exception;
+package dev.apma.cnat.apigateway.exception.trackerservice;
 
+
+import dev.apma.cnat.apigateway.exception.CNATServiceException;
 
 public class TrackerServiceException extends CNATServiceException {
 

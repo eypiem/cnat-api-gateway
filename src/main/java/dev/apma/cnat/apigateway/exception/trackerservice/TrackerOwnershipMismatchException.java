@@ -1,4 +1,4 @@
-package dev.apma.cnat.apigateway.exception;
+package dev.apma.cnat.apigateway.exception.trackerservice;
 
 
 public class TrackerOwnershipMismatchException extends TrackerServiceException {

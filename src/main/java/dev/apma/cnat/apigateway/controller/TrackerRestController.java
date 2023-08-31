@@ -7,14 +7,13 @@ import dev.apma.cnat.apigateway.exception.CNATServiceException;
 import dev.apma.cnat.apigateway.request.TrackerDataRegisterRequest;
 import dev.apma.cnat.apigateway.request.TrackerRegisterRequest;
 import dev.apma.cnat.apigateway.response.*;
-import dev.apma.cnat.apigateway.service.JwtHelper;
+import dev.apma.cnat.apigateway.service.JwtService;
 import dev.apma.cnat.apigateway.service.TrackerService;
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,27 +27,19 @@ public class TrackerRestController {
 
     private final TrackerService trackerSvc;
 
-    private final KafkaTemplate<String, TrackerDataDTO> kafkaTemplate;
-
-    private final String trackerDataRegisterTopic;
-
     @Autowired
-    public TrackerRestController(TrackerService trackerSvc,
-                                 KafkaTemplate<String, TrackerDataDTO> kafkaTemplate,
-                                 @Value("${app.kafka.topics.tracker-data-register}") String trackerDataRegisterTopic) {
+    public TrackerRestController(TrackerService trackerSvc) {
         this.trackerSvc = trackerSvc;
-        this.kafkaTemplate = kafkaTemplate;
-        this.trackerDataRegisterTopic = trackerDataRegisterTopic;
     }
 
     @Operation(description = "Register a new tracker for a user")
     @CrossOrigin(origins = "${app.cnat.web-app}")
     @PostMapping("")
     public TrackerRegisterResponse registerTracker(Authentication auth,
-                                                   @RequestBody TrackerRegisterRequest trr) throws CNATServiceException {
+                                                   @RequestBody @Valid TrackerRegisterRequest trr) throws CNATServiceException {
         LOGGER.info("post /trackers");
 
-        var subject = JwtHelper.getSubjectForRole(auth, JwtHelper.Role.USER);
+        var subject = JwtService.getSubjectForRole(auth, JwtService.Role.USER);
         return trackerSvc.registerTracker(new TrackerDTO(null, subject, trr.name()));
     }
 
@@ -58,7 +49,7 @@ public class TrackerRestController {
     public void deleteTracker(Authentication auth, @PathVariable String trackerId) throws CNATServiceException {
         LOGGER.info("delete /trackers/{}", trackerId);
 
-        var subject = JwtHelper.getSubjectForRole(auth, JwtHelper.Role.USER);
+        var subject = JwtService.getSubjectForRole(auth, JwtService.Role.USER);
         trackerSvc.checkTrackerBelongsToUser(trackerId, subject);
         trackerSvc.deleteTrackerById(trackerId);
     }
@@ -69,7 +60,7 @@ public class TrackerRestController {
     public TrackersGetResponse getUserTrackers(Authentication auth) throws CNATServiceException {
         LOGGER.info("get /trackers");
 
-        var subject = JwtHelper.getSubjectForRole(auth, JwtHelper.Role.USER);
+        var subject = JwtService.getSubjectForRole(auth, JwtService.Role.USER);
         return trackerSvc.getUserTrackers(subject);
     }
 
@@ -80,7 +71,7 @@ public class TrackerRestController {
                                          @PathVariable String trackerId) throws CNATServiceException {
         LOGGER.info("get /trackers/{}", trackerId);
 
-        var subject = JwtHelper.getSubjectForRole(auth, JwtHelper.Role.USER);
+        var subject = JwtService.getSubjectForRole(auth, JwtService.Role.USER);
         trackerSvc.checkTrackerBelongsToUser(trackerId, subject);
         return trackerSvc.getTrackerById(trackerId);
     }
@@ -88,13 +79,12 @@ public class TrackerRestController {
     @Operation(description = "Register a new tracker data for a tracker")
     @PostMapping("/data")
     public void registerTrackerData(Authentication auth,
-                                    @RequestBody TrackerDataRegisterRequest req) throws CNATServiceException {
+                                    @RequestBody @Valid TrackerDataRegisterRequest req) throws CNATServiceException {
         LOGGER.info("post /trackers/data: {}", req);
 
-        var subject = JwtHelper.getSubjectForRole(auth, JwtHelper.Role.TRACKER);
+        var subject = JwtService.getSubjectForRole(auth, JwtService.Role.TRACKER);
         var td = new TrackerDataDTO(new TrackerDTO(subject, null, null), req.data(), req.timestamp());
-        kafkaTemplate.send(trackerDataRegisterTopic, td);
-        /// TODO: check if Kafka was successful
+        trackerSvc.registerTrackerData(td);
     }
 
     @Operation(description = "Retrieve a tracker data for a user")
@@ -108,7 +98,7 @@ public class TrackerRestController {
                                                  @RequestParam Optional<Integer> limit) throws CNATServiceException {
         LOGGER.info("get /trackers/{}/data from: {} to: {}", trackerId, from, to);
 
-        var subject = JwtHelper.getSubjectForRole(auth, JwtHelper.Role.USER);
+        var subject = JwtService.getSubjectForRole(auth, JwtService.Role.USER);
         trackerSvc.checkTrackerBelongsToUser(trackerId, subject);
         return trackerSvc.getTrackerData(trackerId,
                 from.orElse(null),
@@ -123,7 +113,7 @@ public class TrackerRestController {
     public LatestTrackerDataGetResponse getLatestTrackersData(Authentication auth) throws CNATServiceException {
         LOGGER.info("get /trackers/data/latest");
 
-        var subject = JwtHelper.getSubjectForRole(auth, JwtHelper.Role.USER);
+        var subject = JwtService.getSubjectForRole(auth, JwtService.Role.USER);
         return trackerSvc.getLatestTrackersData(subject);
     }
 }
