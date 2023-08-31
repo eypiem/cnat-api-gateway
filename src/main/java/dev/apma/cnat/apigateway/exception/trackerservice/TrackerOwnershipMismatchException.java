@@ -1,6 +1,12 @@
 package dev.apma.cnat.apigateway.exception.trackerservice;
 
 
+/**
+ * This {@code Exception} indicates a situation where a tracker's owner differs from the user trying to perform a
+ * request.
+ *
+ * @author Amir Parsa Mahdian
+ */
 public class TrackerOwnershipMismatchException extends TrackerServiceException {
 
     public TrackerOwnershipMismatchException() {

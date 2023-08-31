@@ -6,7 +6,7 @@ import dev.apma.cnat.apigateway.request.UserAuthRequest;
 import dev.apma.cnat.apigateway.request.UserDeleteRequest;
 import dev.apma.cnat.apigateway.request.UserRegisterRequest;
 import dev.apma.cnat.apigateway.response.UserAuthResponse;
-import dev.apma.cnat.apigateway.service.JwtServiceImpl;
+import dev.apma.cnat.apigateway.service.JwtService;
 import dev.apma.cnat.apigateway.service.TrackerService;
 import dev.apma.cnat.apigateway.service.UserService;
 import org.junit.jupiter.api.*;
@@ -38,7 +38,7 @@ class UserRestControllerTest {
     private MockMvc mockMvc;
 
     @Autowired
-    private JwtServiceImpl jwtHelper;
+    private JwtService jwtHelper;
 
     @MockBean
     private static UserService userSvc;
@@ -51,7 +51,7 @@ class UserRestControllerTest {
     @BeforeAll
     void setup() {
         userJwt = jwtHelper.createJwtForClaims("1@test.com",
-                Map.of(JwtServiceImpl.ROLE_ATTRIBUTE, JwtServiceImpl.Role.USER.toString()));
+                Map.of(JwtService.ROLE_ATTRIBUTE, JwtService.Role.USER.toString()));
     }
 
     @AfterAll

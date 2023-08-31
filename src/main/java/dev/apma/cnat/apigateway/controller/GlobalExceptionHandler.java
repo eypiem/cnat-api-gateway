@@ -4,7 +4,7 @@ package dev.apma.cnat.apigateway.controller;
 import dev.apma.cnat.apigateway.dto.ValidationErrorsDTO;
 import dev.apma.cnat.apigateway.exception.CNATServiceException;
 import dev.apma.cnat.apigateway.exception.FieldValidationException;
-import dev.apma.cnat.apigateway.exception.jwtservice.JwtRoleMismatchException;
+import dev.apma.cnat.apigateway.exception.JwtRoleMismatchException;
 import dev.apma.cnat.apigateway.exception.trackerservice.TrackerOwnershipMismatchException;
 import dev.apma.cnat.apigateway.exception.userservice.UserAlreadyExistsException;
 import dev.apma.cnat.apigateway.exception.userservice.UserServiceUnauthorizedException;
@@ -19,6 +19,12 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
+
+/**
+ * This class handles all exception thrown during request executions and provides a REST API response for each.
+ *
+ * @author Amir Parsa Mahdian
+ */
 @RestControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 

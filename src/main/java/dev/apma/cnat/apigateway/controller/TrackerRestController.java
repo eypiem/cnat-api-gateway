@@ -4,6 +4,7 @@ package dev.apma.cnat.apigateway.controller;
 import dev.apma.cnat.apigateway.dto.TrackerDTO;
 import dev.apma.cnat.apigateway.dto.TrackerDataDTO;
 import dev.apma.cnat.apigateway.exception.CNATServiceException;
+import dev.apma.cnat.apigateway.exception.JwtRoleMismatchException;
 import dev.apma.cnat.apigateway.request.TrackerDataRegisterRequest;
 import dev.apma.cnat.apigateway.request.TrackerRegisterRequest;
 import dev.apma.cnat.apigateway.response.*;
@@ -20,6 +21,11 @@ import org.springframework.web.bind.annotation.*;
 import java.time.Instant;
 import java.util.Optional;
 
+/**
+ * This class is a controller for REST API endpoints related to trackers.
+ *
+ * @author Amir Parsa Mahdian
+ */
 @RestController
 @RequestMapping("/trackers")
 public class TrackerRestController {
@@ -36,7 +42,7 @@ public class TrackerRestController {
     @CrossOrigin(origins = "${app.cnat.web-app}")
     @PostMapping("")
     public TrackerRegisterResponse registerTracker(Authentication auth,
-                                                   @RequestBody @Valid TrackerRegisterRequest trr) throws CNATServiceException {
+                                                   @RequestBody @Valid TrackerRegisterRequest trr) throws CNATServiceException, JwtRoleMismatchException {
         LOGGER.info("post /trackers");
 
         var subject = JwtService.getSubjectForRole(auth, JwtService.Role.USER);
@@ -46,7 +52,8 @@ public class TrackerRestController {
     @Operation(description = "Delete a tracker for a user")
     @CrossOrigin(origins = "${app.cnat.web-app}")
     @DeleteMapping("/{trackerId}")
-    public void deleteTracker(Authentication auth, @PathVariable String trackerId) throws CNATServiceException {
+    public void deleteTracker(Authentication auth,
+                              @PathVariable String trackerId) throws CNATServiceException, JwtRoleMismatchException {
         LOGGER.info("delete /trackers/{}", trackerId);
 
         var subject = JwtService.getSubjectForRole(auth, JwtService.Role.USER);
@@ -57,7 +64,8 @@ public class TrackerRestController {
     @Operation(description = "Retrieve user's trackers")
     @CrossOrigin(origins = "${app.cnat.web-app}")
     @GetMapping("")
-    public TrackersGetResponse getUserTrackers(Authentication auth) throws CNATServiceException {
+    public TrackersGetResponse getUserTrackers(Authentication auth) throws CNATServiceException,
+            JwtRoleMismatchException {
         LOGGER.info("get /trackers");
 
         var subject = JwtService.getSubjectForRole(auth, JwtService.Role.USER);
@@ -68,7 +76,8 @@ public class TrackerRestController {
     @CrossOrigin(origins = "${app.cnat.web-app}")
     @GetMapping("/{trackerId}")
     public TrackerGetResponse getTracker(Authentication auth,
-                                         @PathVariable String trackerId) throws CNATServiceException {
+                                         @PathVariable String trackerId) throws CNATServiceException,
+            JwtRoleMismatchException {
         LOGGER.info("get /trackers/{}", trackerId);
 
         var subject = JwtService.getSubjectForRole(auth, JwtService.Role.USER);
@@ -79,7 +88,7 @@ public class TrackerRestController {
     @Operation(description = "Register a new tracker data for a tracker")
     @PostMapping("/data")
     public void registerTrackerData(Authentication auth,
-                                    @RequestBody @Valid TrackerDataRegisterRequest req) throws CNATServiceException {
+                                    @RequestBody @Valid TrackerDataRegisterRequest req) throws JwtRoleMismatchException {
         LOGGER.info("post /trackers/data: {}", req);
 
         var subject = JwtService.getSubjectForRole(auth, JwtService.Role.TRACKER);
@@ -95,7 +104,8 @@ public class TrackerRestController {
                                                  @RequestParam Optional<Instant> from,
                                                  @RequestParam Optional<Instant> to,
                                                  @RequestParam Optional<Boolean> hasCoordinates,
-                                                 @RequestParam Optional<Integer> limit) throws CNATServiceException {
+                                                 @RequestParam Optional<Integer> limit) throws CNATServiceException,
+            JwtRoleMismatchException {
         LOGGER.info("get /trackers/{}/data from: {} to: {}", trackerId, from, to);
 
         var subject = JwtService.getSubjectForRole(auth, JwtService.Role.USER);
@@ -110,7 +120,8 @@ public class TrackerRestController {
     @Operation(description = "Retrieve the latest data of each of the user's trackers")
     @CrossOrigin(origins = "${app.cnat.web-app}")
     @GetMapping("/data/latest")
-    public LatestTrackerDataGetResponse getLatestTrackersData(Authentication auth) throws CNATServiceException {
+    public LatestTrackerDataGetResponse getLatestTrackersData(Authentication auth) throws CNATServiceException,
+            JwtRoleMismatchException {
         LOGGER.info("get /trackers/data/latest");
 
         var subject = JwtService.getSubjectForRole(auth, JwtService.Role.USER);

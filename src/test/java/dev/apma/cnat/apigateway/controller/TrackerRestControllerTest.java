@@ -9,7 +9,6 @@ import dev.apma.cnat.apigateway.request.TrackerDataRegisterRequest;
 import dev.apma.cnat.apigateway.request.TrackerRegisterRequest;
 import dev.apma.cnat.apigateway.response.*;
 import dev.apma.cnat.apigateway.service.JwtService;
-import dev.apma.cnat.apigateway.service.JwtServiceImpl;
 import dev.apma.cnat.apigateway.service.TrackerService;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -61,9 +60,9 @@ class TrackerRestControllerTest {
         td2 = new TrackerDataDTO(t1, Map.of("param1", 80), Instant.parse("2023-01-01T00:00:00.1Z"));
 
         userJwt = jwtService.createJwtForClaims(t1.userId(),
-                Map.of(JwtServiceImpl.ROLE_ATTRIBUTE, JwtServiceImpl.Role.USER.toString()));
+                Map.of(JwtService.ROLE_ATTRIBUTE, JwtService.Role.USER.toString()));
         trackerJwt = jwtService.createJwtForClaims(t1.id(),
-                Map.of(JwtServiceImpl.ROLE_ATTRIBUTE, JwtServiceImpl.Role.TRACKER.toString()));
+                Map.of(JwtService.ROLE_ATTRIBUTE, JwtService.Role.TRACKER.toString()));
 
     }
 

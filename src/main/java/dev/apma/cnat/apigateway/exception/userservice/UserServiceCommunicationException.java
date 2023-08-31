@@ -1,6 +1,12 @@
 package dev.apma.cnat.apigateway.exception.userservice;
 
 
+/**
+ * This {@code Exception} indicates a situation where a connection error occurred while trying to communicate with
+ * CNAT User Service.
+ *
+ * @author Amir Parsa Mahdian
+ */
 public class UserServiceCommunicationException extends UserServiceException {
 
     public UserServiceCommunicationException() {

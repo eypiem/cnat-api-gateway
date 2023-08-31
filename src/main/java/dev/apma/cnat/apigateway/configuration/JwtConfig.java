@@ -18,6 +18,11 @@ import java.security.cert.CertificateException;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 
+/**
+ * This class configures the signing key used for JWTs.
+ *
+ * @author Amir Parsa Mahdian
+ */
 @Configuration
 public class JwtConfig {
     private final static Logger LOGGER = LoggerFactory.getLogger(JwtConfig.class);

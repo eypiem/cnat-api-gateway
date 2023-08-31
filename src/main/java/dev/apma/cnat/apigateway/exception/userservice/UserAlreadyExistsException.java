@@ -1,6 +1,12 @@
 package dev.apma.cnat.apigateway.exception.userservice;
 
 
+/**
+ * This {@code Exception} indicates a situation where an email has been reported as already existing by CNAT User
+ * Service.
+ *
+ * @author Amir Parsa Mahdian
+ */
 public final class UserAlreadyExistsException extends UserServiceException {
 
     public UserAlreadyExistsException() {

@@ -7,6 +7,11 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * This response class defines the body for a <i>tracker data get</i> request.
+ *
+ * @author Amir Parsa Mahdian
+ */
 public record TrackerDataGetResponse(List<TrackerData> trackerData) {
 
     record TrackerData(Map<String, Object> data, Instant timestamp) {

@@ -1,7 +1,12 @@
-package dev.apma.cnat.apigateway.exception.jwtservice;
+package dev.apma.cnat.apigateway.exception;
 
 
-public class JwtRoleMismatchException extends JwtServiceException {
+/**
+ * This {@code Exception} indicates a situation where a JWT's role does not match the requirements.
+ *
+ * @author Amir Parsa Mahdian
+ */
+public class JwtRoleMismatchException extends Exception {
 
     public JwtRoleMismatchException() {
         super();

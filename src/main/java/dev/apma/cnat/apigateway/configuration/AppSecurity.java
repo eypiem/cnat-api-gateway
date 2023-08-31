@@ -11,6 +11,11 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 
 
+/**
+ * This class configures the security rules enforced on REST API endpoints.
+ *
+ * @author Amir Parsa Mahdian
+ */
 @Configuration
 @EnableWebSecurity
 public class AppSecurity {
