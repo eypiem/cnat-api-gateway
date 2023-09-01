@@ -5,6 +5,7 @@ import dev.apma.cnat.apigateway.dto.TrackerDTO;
 import dev.apma.cnat.apigateway.dto.TrackerDataDTO;
 import dev.apma.cnat.apigateway.exception.CNATServiceException;
 import dev.apma.cnat.apigateway.exception.JwtRoleMismatchException;
+import dev.apma.cnat.apigateway.exception.trackerservice.TrackerOwnershipMismatchException;
 import dev.apma.cnat.apigateway.request.TrackerDataRegisterRequest;
 import dev.apma.cnat.apigateway.request.TrackerRegisterRequest;
 import dev.apma.cnat.apigateway.response.*;
@@ -57,8 +58,11 @@ public class TrackerRestController {
         LOGGER.info("delete /trackers/{}", trackerId);
 
         var subject = JwtService.getSubjectForRole(auth, JwtService.Role.USER);
-        trackerSvc.checkTrackerBelongsToUser(trackerId, subject);
-        trackerSvc.deleteTrackerById(trackerId);
+        var r = trackerSvc.getTrackerById(trackerId);
+        if (TrackerService.trackerBelongsToUser(r.tracker(), subject)) {
+            trackerSvc.deleteTrackerById(trackerId);
+        }
+        throw new TrackerOwnershipMismatchException();
     }
 
     @Operation(description = "Retrieve user's trackers")
@@ -81,8 +85,11 @@ public class TrackerRestController {
         LOGGER.info("get /trackers/{}", trackerId);
 
         var subject = JwtService.getSubjectForRole(auth, JwtService.Role.USER);
-        trackerSvc.checkTrackerBelongsToUser(trackerId, subject);
-        return trackerSvc.getTrackerById(trackerId);
+        var r = trackerSvc.getTrackerById(trackerId);
+        if (TrackerService.trackerBelongsToUser(r.tracker(), subject)) {
+            return r;
+        }
+        throw new TrackerOwnershipMismatchException();
     }
 
     @Operation(description = "Register a new tracker data for a tracker")
@@ -109,12 +116,15 @@ public class TrackerRestController {
         LOGGER.info("get /trackers/{}/data from: {} to: {}", trackerId, from, to);
 
         var subject = JwtService.getSubjectForRole(auth, JwtService.Role.USER);
-        trackerSvc.checkTrackerBelongsToUser(trackerId, subject);
-        return trackerSvc.getTrackerData(trackerId,
-                from.orElse(null),
-                to.orElse(null),
-                hasCoordinates.orElse(null),
-                limit.orElse(null));
+        var r = trackerSvc.getTrackerById(trackerId);
+        if (TrackerService.trackerBelongsToUser(r.tracker(), subject)) {
+            return trackerSvc.getTrackerData(trackerId,
+                    from.orElse(null),
+                    to.orElse(null),
+                    hasCoordinates.orElse(null),
+                    limit.orElse(null));
+        }
+        throw new TrackerOwnershipMismatchException();
     }
 
     @Operation(description = "Retrieve the latest data of each of the user's trackers")

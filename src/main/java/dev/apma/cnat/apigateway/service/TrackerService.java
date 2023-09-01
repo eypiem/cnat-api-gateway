@@ -4,7 +4,7 @@ package dev.apma.cnat.apigateway.service;
 import dev.apma.cnat.apigateway.dto.TrackerDTO;
 import dev.apma.cnat.apigateway.dto.TrackerDataDTO;
 import dev.apma.cnat.apigateway.exception.FieldValidationException;
-import dev.apma.cnat.apigateway.exception.trackerservice.TrackerOwnershipMismatchException;
+import dev.apma.cnat.apigateway.exception.trackerservice.TrackerDoesNotExistException;
 import dev.apma.cnat.apigateway.exception.trackerservice.TrackerServiceCommunicationException;
 import dev.apma.cnat.apigateway.response.*;
 import jakarta.annotation.Nullable;
@@ -35,10 +35,12 @@ public interface TrackerService {
      *
      * @param trackerId the tracker's ID
      * @return the tracker having the provided ID
+     * @throws TrackerDoesNotExistException         if a tracker with the provided tracker ID does not exist
      * @throws TrackerServiceCommunicationException if an unexpected error occurs during communication with CNAT Tracker
      *                                              Service
      */
-    TrackerGetResponse getTrackerById(String trackerId) throws TrackerServiceCommunicationException;
+    TrackerGetResponse getTrackerById(String trackerId) throws TrackerDoesNotExistException,
+            TrackerServiceCommunicationException;
 
     /**
      * Returns all trackers associated with the provided userId.
@@ -49,19 +51,6 @@ public interface TrackerService {
      *                                              Service
      */
     TrackersGetResponse getUserTrackers(String userId) throws TrackerServiceCommunicationException;
-
-    /**
-     * Checks if the tracker having the provided ID has the provided user ID. If the tracker belongs to the user, the
-     * method does nothing.
-     *
-     * @param trackerId the tracker's ID
-     * @param userId    the user's ID to match the tracker with
-     * @throws TrackerServiceCommunicationException if an unexpected error occurs during communication with CNAT Tracker
-     * @throws TrackerOwnershipMismatchException    If the tracker does not belong to the user
-     */
-    void checkTrackerBelongsToUser(String trackerId,
-                                   String userId) throws TrackerServiceCommunicationException,
-            TrackerOwnershipMismatchException;
 
     /**
      * Deletes the tracker and all tracker data associated with it.
@@ -84,7 +73,7 @@ public interface TrackerService {
     /**
      * Registers a new tacker data.
      *
-     * @param req the TrackerDataDTO to register
+     * @param req the TrackerDataDTO to be registered
      */
     void registerTrackerData(TrackerDataDTO req);
 
@@ -115,4 +104,15 @@ public interface TrackerService {
      *                                              Service
      */
     LatestTrackerDataGetResponse getLatestTrackersData(String userId) throws TrackerServiceCommunicationException;
+
+    /**
+     * Checks if the provided tracker's owner is the provided userId.
+     *
+     * @param tracker the tracker
+     * @param userId  the user ID
+     * @return true if the provided tracker's owner is the provided userId, false otherwise
+     */
+    static boolean trackerBelongsToUser(TrackerDTO tracker, String userId) {
+        return tracker.userId().equals(userId);
+    }
 }

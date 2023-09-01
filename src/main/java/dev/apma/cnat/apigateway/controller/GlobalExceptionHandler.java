@@ -5,6 +5,7 @@ import dev.apma.cnat.apigateway.dto.ValidationErrorsDTO;
 import dev.apma.cnat.apigateway.exception.CNATServiceException;
 import dev.apma.cnat.apigateway.exception.FieldValidationException;
 import dev.apma.cnat.apigateway.exception.JwtRoleMismatchException;
+import dev.apma.cnat.apigateway.exception.trackerservice.TrackerDoesNotExistException;
 import dev.apma.cnat.apigateway.exception.trackerservice.TrackerOwnershipMismatchException;
 import dev.apma.cnat.apigateway.exception.userservice.UserAlreadyExistsException;
 import dev.apma.cnat.apigateway.exception.userservice.UserServiceUnauthorizedException;
@@ -49,6 +50,11 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(value = {UserAlreadyExistsException.class})
     protected ResponseEntity<Object> handleUserAlreadyExistsException(UserAlreadyExistsException ex) {
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(value = {TrackerDoesNotExistException.class})
+    protected ResponseEntity<Object> handleTrackerDoesNotExistException(TrackerDoesNotExistException ex) {
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(value = {TrackerOwnershipMismatchException.class})

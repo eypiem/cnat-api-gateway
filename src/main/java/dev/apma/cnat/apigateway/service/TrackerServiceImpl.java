@@ -5,7 +5,7 @@ import dev.apma.cnat.apigateway.dto.TrackerDTO;
 import dev.apma.cnat.apigateway.dto.TrackerDataDTO;
 import dev.apma.cnat.apigateway.dto.ValidationErrorsDTO;
 import dev.apma.cnat.apigateway.exception.FieldValidationException;
-import dev.apma.cnat.apigateway.exception.trackerservice.TrackerOwnershipMismatchException;
+import dev.apma.cnat.apigateway.exception.trackerservice.TrackerDoesNotExistException;
 import dev.apma.cnat.apigateway.exception.trackerservice.TrackerServiceCommunicationException;
 import dev.apma.cnat.apigateway.response.*;
 import jakarta.annotation.Nullable;
@@ -15,14 +15,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Instant;
 import java.util.Arrays;
@@ -95,7 +93,8 @@ public class TrackerServiceImpl implements TrackerService {
     }
 
     @Override
-    public TrackerGetResponse getTrackerById(String trackerId) throws TrackerServiceCommunicationException {
+    public TrackerGetResponse getTrackerById(String trackerId) throws TrackerDoesNotExistException,
+            TrackerServiceCommunicationException {
         var uri = trackerServiceUri + "/%s".formatted(trackerId);
 
         try {
@@ -103,7 +102,7 @@ public class TrackerServiceImpl implements TrackerService {
             return new TrackerGetResponse(r);
         } catch (HttpClientErrorException.NotFound e) {
             LOGGER.warn("Access to non-existent tracker requested.");
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+            throw new TrackerDoesNotExistException();
         } catch (RestClientException e) {
             throw new TrackerServiceCommunicationException();
         }
@@ -118,17 +117,6 @@ public class TrackerServiceImpl implements TrackerService {
             return TrackersGetResponse.fromTrackerDTOs(r == null ? List.of() : Arrays.asList(r));
         } catch (RestClientException e) {
             throw new TrackerServiceCommunicationException();
-        }
-    }
-
-    @Override
-    public void checkTrackerBelongsToUser(String trackerId,
-                                          String userId) throws TrackerServiceCommunicationException,
-            TrackerOwnershipMismatchException {
-        var res = getTrackerById(trackerId);
-        if (!userId.equals(res.tracker().userId())) {
-            LOGGER.warn("Non-matching user and tracker request detected.");
-            throw new TrackerOwnershipMismatchException();
         }
     }
 
