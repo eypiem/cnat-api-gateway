@@ -1,8 +1,10 @@
 package dev.apma.cnat.apigateway.service;
 
 
+import dev.apma.cnat.apigateway.dto.UserDTO;
 import dev.apma.cnat.apigateway.exception.FieldValidationException;
 import dev.apma.cnat.apigateway.exception.userservice.UserAlreadyExistsException;
+import dev.apma.cnat.apigateway.exception.userservice.UserDoesNotExistException;
 import dev.apma.cnat.apigateway.exception.userservice.UserServiceCommunicationException;
 import dev.apma.cnat.apigateway.exception.userservice.UserServiceUnauthorizedException;
 import dev.apma.cnat.apigateway.request.UserAuthRequest;
@@ -28,6 +30,17 @@ public interface UserService {
      */
     void register(UserRegisterRequest req) throws FieldValidationException, UserAlreadyExistsException,
             UserServiceCommunicationException;
+    
+    /**
+     * Returns the user having the provided email.
+     *
+     * @param email the user's email
+     * @return the user having the provided email
+     * @throws UserDoesNotExistException         if a user with the provided email does not exist
+     * @throws UserServiceCommunicationException if an unexpected error occurs during communication with CNAT User
+     *                                           Service
+     */
+    UserDTO getByEmail(String email) throws UserDoesNotExistException, UserServiceCommunicationException;
 
     /**
      * Authenticates a user.

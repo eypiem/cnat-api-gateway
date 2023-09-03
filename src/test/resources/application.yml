@@ -1,0 +1,36 @@
+server:
+  port: 8080
+  error:
+    include-message: always
+
+#logging:
+#  level:
+#    org.springframework.security.web: DEBUG
+
+spring:
+  kafka:
+    bootstrap-servers: ${CNAT_KAFKA_URI}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        spring:
+          json:
+            add:
+              type:
+                headers: false
+
+app:
+  security:
+    jwt:
+      keystore-location: keys/keystore.jks
+      password: ${CNAT_API_GATEWAY_KEYSTORE_PASSWORD}
+      key-alias: ${CNAT_API_GATEWAY_JWT_KEY_ALIAS}
+      passphrase: ${CNAT_API_GATEWAY_JWT_KEY_PASSWORD}
+  kafka:
+    topics:
+      tracker-data-register: ${CNAT_KAFKA_TRACKER_DATA_TOPIC}
+  cnat:
+    tracker-service: ${CNAT_TRACKER_SERVICE_URI}
+    user-service: ${CNAT_USER_SERVICE_URI}
+    web-app: ${CNAT_WEB_APP_ORIGIN}

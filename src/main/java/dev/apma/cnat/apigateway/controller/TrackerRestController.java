@@ -5,12 +5,13 @@ import dev.apma.cnat.apigateway.dto.TrackerDTO;
 import dev.apma.cnat.apigateway.dto.TrackerDataDTO;
 import dev.apma.cnat.apigateway.exception.CNATServiceException;
 import dev.apma.cnat.apigateway.exception.JwtRoleMismatchException;
-import dev.apma.cnat.apigateway.exception.trackerservice.TrackerOwnershipMismatchException;
+import dev.apma.cnat.apigateway.exception.trackerservice.TrackerDoesNotExistException;
 import dev.apma.cnat.apigateway.request.TrackerDataRegisterRequest;
 import dev.apma.cnat.apigateway.request.TrackerRegisterRequest;
 import dev.apma.cnat.apigateway.response.*;
 import dev.apma.cnat.apigateway.service.JwtService;
 import dev.apma.cnat.apigateway.service.TrackerService;
+import dev.apma.cnat.apigateway.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
@@ -34,9 +35,12 @@ public class TrackerRestController {
 
     private final TrackerService trackerSvc;
 
+    private final UserService userSvc;
+
     @Autowired
-    public TrackerRestController(TrackerService trackerSvc) {
+    public TrackerRestController(TrackerService trackerSvc, UserService userSvc) {
         this.trackerSvc = trackerSvc;
+        this.userSvc = userSvc;
     }
 
     @Operation(description = "Register a new tracker for a user")
@@ -47,6 +51,7 @@ public class TrackerRestController {
         LOGGER.info("post /trackers");
 
         var subject = JwtService.getSubjectForRole(auth, JwtService.Role.USER);
+        userSvc.getByEmail(subject);
         return trackerSvc.registerTracker(new TrackerDTO(null, subject, trr.name()));
     }
 
@@ -59,10 +64,11 @@ public class TrackerRestController {
 
         var subject = JwtService.getSubjectForRole(auth, JwtService.Role.USER);
         var r = trackerSvc.getTrackerById(trackerId);
-        if (TrackerService.trackerBelongsToUser(r.tracker(), subject)) {
-            trackerSvc.deleteTrackerById(trackerId);
+        if (!TrackerService.trackerBelongsToUser(r.tracker(), subject)) {
+            /// NOTE: Changing exception to reduce the information about trackers.
+            throw new TrackerDoesNotExistException();
         }
-        throw new TrackerOwnershipMismatchException();
+        trackerSvc.deleteTrackerById(trackerId);
     }
 
     @Operation(description = "Retrieve user's trackers")
@@ -86,10 +92,11 @@ public class TrackerRestController {
 
         var subject = JwtService.getSubjectForRole(auth, JwtService.Role.USER);
         var r = trackerSvc.getTrackerById(trackerId);
-        if (TrackerService.trackerBelongsToUser(r.tracker(), subject)) {
-            return r;
+        if (!TrackerService.trackerBelongsToUser(r.tracker(), subject)) {
+            /// NOTE: Changing exception to reduce the information about trackers.
+            throw new TrackerDoesNotExistException();
         }
-        throw new TrackerOwnershipMismatchException();
+        return r;
     }
 
     @Operation(description = "Register a new tracker data for a tracker")
@@ -117,14 +124,15 @@ public class TrackerRestController {
 
         var subject = JwtService.getSubjectForRole(auth, JwtService.Role.USER);
         var r = trackerSvc.getTrackerById(trackerId);
-        if (TrackerService.trackerBelongsToUser(r.tracker(), subject)) {
-            return trackerSvc.getTrackerData(trackerId,
-                    from.orElse(null),
-                    to.orElse(null),
-                    hasCoordinates.orElse(null),
-                    limit.orElse(null));
+        if (!TrackerService.trackerBelongsToUser(r.tracker(), subject)) {
+            /// NOTE: Changing exception to reduce the information about trackers.
+            throw new TrackerDoesNotExistException();
         }
-        throw new TrackerOwnershipMismatchException();
+        return trackerSvc.getTrackerData(trackerId,
+                from.orElse(null),
+                to.orElse(null),
+                hasCoordinates.orElse(null),
+                limit.orElse(null));
     }
 
     @Operation(description = "Retrieve the latest data of each of the user's trackers")

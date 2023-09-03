@@ -8,6 +8,7 @@ import dev.apma.cnat.apigateway.exception.JwtRoleMismatchException;
 import dev.apma.cnat.apigateway.exception.trackerservice.TrackerDoesNotExistException;
 import dev.apma.cnat.apigateway.exception.trackerservice.TrackerOwnershipMismatchException;
 import dev.apma.cnat.apigateway.exception.userservice.UserAlreadyExistsException;
+import dev.apma.cnat.apigateway.exception.userservice.UserDoesNotExistException;
 import dev.apma.cnat.apigateway.exception.userservice.UserServiceUnauthorizedException;
 import jakarta.annotation.Nullable;
 import org.springframework.http.HttpHeaders;
@@ -45,6 +46,11 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(value = {UserServiceUnauthorizedException.class})
     protected ResponseEntity<Object> handleUserServiceUnauthorizedException(UserServiceUnauthorizedException ex) {
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.UNAUTHORIZED);
+    }
+
+    @ExceptionHandler(value = {UserDoesNotExistException.class})
+    protected ResponseEntity<Object> handleUserDoesNotExistException(UserDoesNotExistException ex) {
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(value = {UserAlreadyExistsException.class})

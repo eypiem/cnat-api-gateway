@@ -1,9 +1,11 @@
 package dev.apma.cnat.apigateway.service;
 
 
+import dev.apma.cnat.apigateway.dto.UserDTO;
 import dev.apma.cnat.apigateway.dto.ValidationErrorsDTO;
 import dev.apma.cnat.apigateway.exception.FieldValidationException;
 import dev.apma.cnat.apigateway.exception.userservice.UserAlreadyExistsException;
+import dev.apma.cnat.apigateway.exception.userservice.UserDoesNotExistException;
 import dev.apma.cnat.apigateway.exception.userservice.UserServiceCommunicationException;
 import dev.apma.cnat.apigateway.exception.userservice.UserServiceUnauthorizedException;
 import dev.apma.cnat.apigateway.request.UserAuthRequest;
@@ -63,6 +65,20 @@ public class UserServiceImpl implements UserService {
             throw new FieldValidationException(e.getResponseBodyAs(ValidationErrorsDTO.class));
         } catch (HttpClientErrorException.Conflict e) {
             throw new UserAlreadyExistsException();
+        } catch (RestClientException e) {
+            throw new UserServiceCommunicationException();
+        }
+    }
+
+    @Override
+    public UserDTO getByEmail(String email) throws UserDoesNotExistException, UserServiceCommunicationException {
+        var uri = userServiceUri + "?email=%s".formatted(email);
+
+        try {
+            return new RestTemplate().getForObject(uri, UserDTO.class);
+        } catch (HttpClientErrorException.NotFound e) {
+            LOGGER.warn("Access to non-existent user requested.");
+            throw new UserDoesNotExistException();
         } catch (RestClientException e) {
             throw new UserServiceCommunicationException();
         }

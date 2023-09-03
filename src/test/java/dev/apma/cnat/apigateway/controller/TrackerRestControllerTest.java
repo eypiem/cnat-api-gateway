@@ -5,11 +5,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import dev.apma.cnat.apigateway.dto.TrackerDTO;
 import dev.apma.cnat.apigateway.dto.TrackerDataDTO;
+import dev.apma.cnat.apigateway.dto.UserDTO;
+import dev.apma.cnat.apigateway.exception.trackerservice.TrackerDoesNotExistException;
+import dev.apma.cnat.apigateway.exception.userservice.UserDoesNotExistException;
 import dev.apma.cnat.apigateway.request.TrackerDataRegisterRequest;
 import dev.apma.cnat.apigateway.request.TrackerRegisterRequest;
 import dev.apma.cnat.apigateway.response.*;
 import dev.apma.cnat.apigateway.service.JwtService;
 import dev.apma.cnat.apigateway.service.TrackerService;
+import dev.apma.cnat.apigateway.service.UserService;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -45,6 +49,9 @@ class TrackerRestControllerTest {
     @MockBean
     private static TrackerService trackerSvc;
 
+    @MockBean
+    private static UserService userSvc;
+
     private static String userJwt;
 
     private static String trackerJwt;
@@ -78,8 +85,9 @@ class TrackerRestControllerTest {
     @Nested
     class RegisterTracker {
 
-        @BeforeAll
-        static void setup() throws Exception {
+        @BeforeEach
+        void setup() throws Exception {
+            when(userSvc.getByEmail(t1.userId())).thenReturn(new UserDTO(t1.userId(), "fn", "ln"));
             when(trackerSvc.registerTracker(isA(TrackerDTO.class))).thenReturn(new TrackerRegisterResponse(t1,
                     trackerJwt));
         }
@@ -107,6 +115,16 @@ class TrackerRestControllerTest {
         }
 
         @Test
+        public void unauthorized_deleted_user() throws Exception {
+            when(userSvc.getByEmail(t1.userId())).thenThrow(UserDoesNotExistException.class);
+            var trr = new TrackerRegisterRequest(t1.name());
+
+            mockMvc.perform(post("/trackers").header("Authorization", "Bearer " + userJwt)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(new ObjectMapper().writeValueAsString(trr))).andExpect(status().isNotFound());
+        }
+
+        @Test
         public void unauthorized_no_jwt() throws Exception {
             var trr = new TrackerRegisterRequest(t1.name());
 
@@ -128,8 +146,9 @@ class TrackerRestControllerTest {
     @Nested
     class DeleteTracker {
 
-        @BeforeAll
-        static void setup() throws Exception {
+        @BeforeEach
+        void setup() throws Exception {
+            when(trackerSvc.getTrackerById(t1.id())).thenReturn(new TrackerGetResponse(t1));
             doNothing().when(trackerSvc).deleteTrackerById(t1.id());
         }
 
@@ -154,8 +173,8 @@ class TrackerRestControllerTest {
     @Nested
     class GetUserTrackers {
 
-        @BeforeAll
-        static void setup() throws Exception {
+        @BeforeEach
+        void setup() throws Exception {
             when(trackerSvc.getUserTrackers(isA(String.class))).thenReturn(TrackersGetResponse.fromTrackerDTOs(List.of(
                     t1)));
         }
@@ -183,8 +202,8 @@ class TrackerRestControllerTest {
     @Nested
     class GetTracker {
 
-        @BeforeAll
-        static void setup() throws Exception {
+        @BeforeEach
+        void setup() throws Exception {
             when(trackerSvc.getTrackerById(isA(String.class))).thenReturn(new TrackerGetResponse(t1));
         }
 
@@ -207,6 +226,13 @@ class TrackerRestControllerTest {
             mockMvc.perform(get("/trackers/%s".formatted(t1.id())).header("Authorization", "Bearer " + trackerJwt))
                     .andExpect(status().isUnauthorized());
         }
+
+        @Test
+        public void non_existent_tracker() throws Exception {
+            when(trackerSvc.getTrackerById(t1.id())).thenThrow(TrackerDoesNotExistException.class);
+            mockMvc.perform(get("/trackers/%s".formatted(t1.id())).header("Authorization", "Bearer " + userJwt))
+                    .andExpect(status().isNotFound());
+        }
     }
 
     @Nested
@@ -216,11 +242,15 @@ class TrackerRestControllerTest {
 
 
         @BeforeAll
-        static void setup() {
-            doNothing().when(trackerSvc).registerTrackerData(isA(TrackerDataDTO.class));
+        static void beforeAll() {
             req = new TrackerDataRegisterRequest(Map.of("param1", "10"), Instant.now());
             om = new ObjectMapper();
             om.registerModule(new JavaTimeModule());
+        }
+
+        @BeforeEach
+        void beforeEach() {
+            doNothing().when(trackerSvc).registerTrackerData(isA(TrackerDataDTO.class));
         }
 
         @AfterAll
@@ -271,8 +301,9 @@ class TrackerRestControllerTest {
     @Nested
     class GetTrackerData {
 
-        @BeforeAll
-        static void setup() throws Exception {
+        @BeforeEach
+        void setup() throws Exception {
+            when(trackerSvc.getTrackerById(t1.id())).thenReturn(new TrackerGetResponse(t1));
             when(trackerSvc.getTrackerData(t1.id(),
                     null,
                     null,
@@ -300,13 +331,20 @@ class TrackerRestControllerTest {
             mockMvc.perform(get("/trackers/%s/data".formatted(t1.id())).header("Authorization", "Bearer " + trackerJwt))
                     .andExpect(status().isUnauthorized());
         }
+
+        @Test
+        public void non_existent_tracker() throws Exception {
+            when(trackerSvc.getTrackerById(t1.id())).thenThrow(TrackerDoesNotExistException.class);
+            mockMvc.perform(get("/trackers/%s/data".formatted(t1.id())).header("Authorization", "Bearer " + userJwt))
+                    .andExpect(status().isNotFound());
+        }
     }
 
     @Nested
     class GetLatestData {
 
-        @BeforeAll
-        static void setup() throws Exception {
+        @BeforeEach
+        void setup() throws Exception {
             when(trackerSvc.getLatestTrackersData(t1.userId())).thenReturn(LatestTrackerDataGetResponse.fromTrackerDataDTOs(
                     List.of(td2)));
         }
