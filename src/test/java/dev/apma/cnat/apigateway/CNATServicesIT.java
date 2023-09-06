@@ -1,4 +1,4 @@
-package dev.apma.cnat.apigateway.integration;
+package dev.apma.cnat.apigateway;
 
 
 import dev.apma.cnat.apigateway.request.TrackerRegisterRequest;
@@ -23,7 +23,7 @@ import java.util.UUID;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class IntegrationIT {
+public class CNATServicesIT {
 
     @Value(value = "${local.server.port}")
     private int port;

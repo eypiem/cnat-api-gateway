@@ -44,7 +44,6 @@ public class TrackerRestController {
     }
 
     @Operation(description = "Register a new tracker for a user")
-    @CrossOrigin(origins = "${app.cnat.web-app}")
     @PostMapping("")
     public TrackerRegisterResponse registerTracker(Authentication auth,
                                                    @RequestBody @Valid TrackerRegisterRequest trr) throws CNATServiceException, JwtRoleMismatchException {
@@ -56,7 +55,6 @@ public class TrackerRestController {
     }
 
     @Operation(description = "Delete a tracker for a user")
-    @CrossOrigin(origins = "${app.cnat.web-app}")
     @DeleteMapping("/{trackerId}")
     public void deleteTracker(Authentication auth,
                               @PathVariable String trackerId) throws CNATServiceException, JwtRoleMismatchException {
@@ -72,7 +70,6 @@ public class TrackerRestController {
     }
 
     @Operation(description = "Retrieve user's trackers")
-    @CrossOrigin(origins = "${app.cnat.web-app}")
     @GetMapping("")
     public TrackersGetResponse getUserTrackers(Authentication auth) throws CNATServiceException,
             JwtRoleMismatchException {
@@ -83,7 +80,6 @@ public class TrackerRestController {
     }
 
     @Operation(description = "Retrieve a tracker for a user")
-    @CrossOrigin(origins = "${app.cnat.web-app}")
     @GetMapping("/{trackerId}")
     public TrackerGetResponse getTracker(Authentication auth,
                                          @PathVariable String trackerId) throws CNATServiceException,
@@ -111,7 +107,6 @@ public class TrackerRestController {
     }
 
     @Operation(description = "Retrieve a tracker data for a user")
-    @CrossOrigin(origins = "${app.cnat.web-app}")
     @GetMapping("/{trackerId}/data")
     public TrackerDataGetResponse getTrackerData(Authentication auth,
                                                  @PathVariable String trackerId,
@@ -136,7 +131,6 @@ public class TrackerRestController {
     }
 
     @Operation(description = "Retrieve the latest data of each of the user's trackers")
-    @CrossOrigin(origins = "${app.cnat.web-app}")
     @GetMapping("/data/latest")
     public LatestTrackerDataGetResponse getLatestTrackersData(Authentication auth) throws CNATServiceException,
             JwtRoleMismatchException {

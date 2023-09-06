@@ -33,7 +33,6 @@ app:
   cnat:
     tracker-service: ${CNAT_TRACKER_SERVICE_URI}
     user-service: ${CNAT_USER_SERVICE_URI}
-    web-app: ${CNAT_WEB_APP_ORIGIN}
 
 management:
   endpoint:

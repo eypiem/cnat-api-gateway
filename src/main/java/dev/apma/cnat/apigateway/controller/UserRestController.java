@@ -38,7 +38,6 @@ public class UserRestController {
     }
 
     @Operation(description = "Register a new user")
-    @CrossOrigin(origins = "${app.cnat.web-app}")
     @PostMapping("")
     public void register(@Valid @RequestBody UserRegisterRequest urr) throws FieldValidationException,
             UserServiceException {
@@ -47,7 +46,6 @@ public class UserRestController {
     }
 
     @Operation(description = "Authenticate a user")
-    @CrossOrigin(origins = "${app.cnat.web-app}")
     @PostMapping("/auth")
     public UserAuthResponse auth(@Valid @RequestBody UserAuthRequest uar) throws FieldValidationException,
             UserServiceException {
@@ -56,7 +54,6 @@ public class UserRestController {
     }
 
     @Operation(description = "Delete a user and all trackers and tracker data associated with them")
-    @CrossOrigin(origins = "${app.cnat.web-app}")
     @DeleteMapping("")
     public void delete(@Valid @RequestBody UserDeleteRequest req) throws CNATServiceException {
         LOGGER.info("delete /users");
