@@ -1,0 +1,9 @@
+apiVersion: deploy.cloud.google.com/v1
+kind: Target
+metadata:
+  name: staging
+  annotations: {}
+  labels: {}
+description: staging
+gke:
+  cluster: projects/PROJECT_ID/locations/us-central1/clusters/cnat-cluster-staging

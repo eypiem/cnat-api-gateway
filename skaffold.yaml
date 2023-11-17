@@ -1,0 +1,12 @@
+apiVersion: skaffold/v2beta16
+kind: Config
+metadata:
+  name: cnat-api-gateway-skaffold
+build:
+  artifacts:
+    - image: cnat-api-gateway
+      context: ./
+deploy:
+  kubectl:
+    manifests:
+      - k8s/k8s-cnat-api-gateway.yaml

@@ -1,0 +1,9 @@
+apiVersion: deploy.cloud.google.com/v1
+kind: DeliveryPipeline
+metadata:
+  name: cnat-api-gateway-cd
+description: CNAT API Gateway CD pipeline
+serialPipeline:
+  stages:
+    - targetId: staging
+    - targetId: prod
